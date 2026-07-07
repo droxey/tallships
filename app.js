@@ -595,6 +595,7 @@ const appShell = document.querySelector(".app-shell");
 const dateFilter = document.querySelector("#date-filter");
 const viewToggle = document.querySelector("#view-toggle");
 const mapReturn = document.querySelector("#map-return");
+const topbar = document.querySelector(".topbar");
 const listPanel = document.querySelector("#events-list-wrap");
 const mapPanel = document.querySelector("#map-panel");
 const tbody = document.querySelector("#events-tbody");
@@ -641,6 +642,215 @@ function mapLink(address) {
   return `https://maps.google.com/?q=${encodeURIComponent(address)}`;
 }
 
+function slugifyFileName(value) {
+  return String(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 72) || "sail-boston-event";
+}
+
+function toDateParts(dateString) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return { year, month, day };
+}
+
+function addDays(dateString, days) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day + days));
+  return date.toISOString().slice(0, 10);
+}
+
+function pad2(value) {
+  return String(value).padStart(2, "0");
+}
+
+function icsDate(dateString) {
+  const { year, month, day } = toDateParts(dateString);
+  return `${year}${pad2(month)}${pad2(day)}`;
+}
+
+function icsDateTime(dateString, timeParts) {
+  const { year, month, day } = toDateParts(dateString);
+  return `${year}${pad2(month)}${pad2(day)}T${pad2(timeParts.hour)}${pad2(timeParts.minute)}00`;
+}
+
+function parseClockTime(value, meridiemHint = "") {
+  const input = String(value).trim();
+  const matches = Array.from(input.matchAll(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/gi));
+  if (!matches.length) return null;
+
+  const match = matches
+    .map((candidate, index) => ({
+      candidate,
+      index,
+      score: (candidate[3] ? 10 : 0) + (candidate[2] ? 5 : 0)
+    }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)[0].candidate;
+
+  let hour = Number(match[1]);
+  const minute = Number(match[2] || 0);
+  const meridiem = (match[3] || meridiemHint || "").toUpperCase();
+
+  if (meridiem === "PM" && hour < 12) hour += 12;
+  if (meridiem === "AM" && hour === 12) hour = 0;
+
+  return { hour, minute, meridiem };
+}
+
+function addMinutes(timeParts, minutesToAdd) {
+  const date = new Date(Date.UTC(2026, 0, 1, timeParts.hour, timeParts.minute + minutesToAdd));
+  return { hour: date.getUTCHours(), minute: date.getUTCMinutes() };
+}
+
+function calendarTiming(event) {
+  const normalized = String(event.time)
+    .replace(/[–—]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const isVague = /multi-day|varies|hours vary|tbd/i.test(normalized);
+  const hasMultiDateSchedule = event.startDate !== event.endDate && /(^|\s)Jul\s+\d|·/i.test(normalized);
+  if (isVague || hasMultiDateSchedule) {
+    return {
+      allDay: true,
+      dtStart: icsDate(event.startDate),
+      dtEnd: icsDate(addDays(event.endDate, 1))
+    };
+  }
+
+  if (normalized.includes("-")) {
+    const [startRaw, endRaw] = normalized.split("-").map((part) => part.trim());
+    const endMeridiem = (endRaw.match(/\b(AM|PM)\b/i)?.[1] || "").toUpperCase();
+    const start = parseClockTime(startRaw, endMeridiem);
+    const end = parseClockTime(endRaw, endMeridiem);
+
+    if (start && end) {
+      return {
+        allDay: false,
+        dtStart: icsDateTime(event.startDate, start),
+        dtEnd: icsDateTime(event.endDate, end)
+      };
+    }
+  }
+
+  const start = parseClockTime(normalized);
+  if (start) {
+    const duration = /onward/i.test(normalized) ? 120 : 60;
+    return {
+      allDay: false,
+      dtStart: icsDateTime(event.startDate, start),
+      dtEnd: icsDateTime(event.endDate, addMinutes(start, duration))
+    };
+  }
+
+  return {
+    allDay: true,
+    dtStart: icsDate(event.startDate),
+    dtEnd: icsDate(addDays(event.endDate, 1))
+  };
+}
+
+function escapeIcsText(value) {
+  return String(value)
+    .replace(/\\/g, "\\\\")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,")
+    .replace(/\r?\n/g, "\\n");
+}
+
+function foldIcsLine(line) {
+  const chunks = [];
+  let remaining = line;
+  while (remaining.length > 73) {
+    chunks.push(remaining.slice(0, 73));
+    remaining = ` ${remaining.slice(73)}`;
+  }
+  chunks.push(remaining);
+  return chunks.join("\r\n");
+}
+
+function buildCalendarDescription(event) {
+  const sourceLines = event.sources
+    .map((source) => `- ${source.label}: ${source.url}`)
+    .join("\n");
+
+  return [
+    `${dateRangeLabel(event)} · ${event.time}`,
+    `Type: ${event.type}`,
+    `Reservation: ${event.reservation}`,
+    `Location: ${event.address}`,
+    "",
+    event.notes,
+    "",
+    `Open Maps: ${mapLink(event.address)}`,
+    "",
+    "Sources:",
+    sourceLines
+  ].join("\n");
+}
+
+function buildIcs(event) {
+  const timing = calendarTiming(event);
+  const dtStamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+  const uid = `${event.id}@droxey-tallships-2026`;
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Droxey//Sail Boston Tall Ships//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "X-WR-CALNAME:Sail Boston 2026",
+    "X-WR-TIMEZONE:America/New_York",
+    "BEGIN:VEVENT",
+    `UID:${escapeIcsText(uid)}`,
+    `DTSTAMP:${dtStamp}`,
+    timing.allDay
+      ? `DTSTART;VALUE=DATE:${timing.dtStart}`
+      : `DTSTART;TZID=America/New_York:${timing.dtStart}`,
+    timing.allDay
+      ? `DTEND;VALUE=DATE:${timing.dtEnd}`
+      : `DTEND;TZID=America/New_York:${timing.dtEnd}`,
+    `SUMMARY:${escapeIcsText(event.title)}`,
+    `LOCATION:${escapeIcsText(event.address)}`,
+    `GEO:${event.lat};${event.lng}`,
+    `X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS=${escapeIcsText(event.address)}:geo:${event.lat},${event.lng}`,
+    `DESCRIPTION:${escapeIcsText(buildCalendarDescription(event))}`,
+    `URL:${escapeIcsText(event.sources[0]?.url || mapLink(event.address))}`,
+    "END:VEVENT",
+    "END:VCALENDAR"
+  ];
+
+  return `${lines.map(foldIcsLine).join("\r\n")}\r\n`;
+}
+
+function openCalendarEvent(event) {
+  const ics = buildIcs(event);
+  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const filename = `${event.startDate}-${slugifyFileName(event.title)}.ics`;
+  const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.rel = "noopener";
+  if (isiOS) {
+    link.target = "_blank";
+  } else {
+    link.download = filename;
+  }
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  window.setTimeout(() => URL.revokeObjectURL(url), 12000);
+  temporarySheetNotice(isiOS
+    ? "Calendar event opened. Confirm it in your calendar app."
+    : "Calendar file created. Open it to add the event.");
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -655,11 +865,29 @@ function eventMatchesDate(event, selectedDate) {
   return event.startDate <= selectedDate && selectedDate <= event.endDate;
 }
 
+function eventSortValue(event) {
+  const timing = calendarTiming(event);
+  if (timing.allDay) return 0;
+  const match = timing.dtStart.match(/T(\d{2})(\d{2})/);
+  return match ? Number(match[1]) * 60 + Number(match[2]) : 0;
+}
+
 function currentEvents() {
   const selectedDate = dateFilter.value || "all";
   return EVENTS
     .filter((event) => eventMatchesDate(event, selectedDate))
-    .sort((a, b) => `${a.startDate} ${a.time}`.localeCompare(`${b.startDate} ${b.time}`));
+    .sort((a, b) => a.startDate.localeCompare(b.startDate)
+      || eventSortValue(a) - eventSortValue(b)
+      || a.title.localeCompare(b.title));
+}
+
+
+function updateTopbarClearance() {
+  if (!topbar) return;
+  const rect = topbar.getBoundingClientRect();
+  const clearance = Math.ceil(rect.bottom + 12);
+  document.documentElement.style.setProperty("--topbar-clearance", `${clearance}px`);
+  document.documentElement.style.setProperty("--sheet-clearance", `${clearance}px`);
 }
 
 function populateFilter() {
@@ -683,6 +911,7 @@ function createIcon(event, isActive = false) {
 function renderMarkers() {
   markerLayer.clearLayers();
   markers.clear();
+  activeMarker = null;
 
   const visible = currentEvents();
   visible.forEach((event) => {
@@ -707,6 +936,7 @@ function renderMarkers() {
 
     marker.addTo(markerLayer);
     markers.set(event.id, marker);
+    if (event.id === activeEventId) activeMarker = marker;
   });
 
   if (visible.length) {
@@ -764,9 +994,12 @@ function renderSheet(event) {
         </div>
       </div>
       <p class="notes">${escapeHtml(event.notes)}</p>
-      <div class="actions">
-        <a class="button button-primary" href="${escapeHtml(mapLink(event.address))}" target="_blank" rel="noopener noreferrer">Open Maps</a>
-        <button id="share-event" class="button button-ghost" type="button">Share</button>
+      <div class="sheet-actions-wrap">
+        <div class="actions">
+          <a class="button button-primary" href="${escapeHtml(mapLink(event.address))}" target="_blank" rel="noopener noreferrer">Open Maps</a>
+          <button id="share-event" class="button button-ghost" type="button">Share</button>
+          <button id="calendar-event" class="button button-ghost button-calendar" type="button">Add to Calendar</button>
+        </div>
       </div>
       <ul class="source-list" aria-label="Event source links">
         ${sources}
@@ -774,6 +1007,7 @@ function renderSheet(event) {
     </div>
   `;
 
+  document.querySelector("#calendar-event")?.addEventListener("click", () => openCalendarEvent(event));
   document.querySelector("#share-event")?.addEventListener("click", () => shareEvent(event));
 }
 
@@ -845,19 +1079,25 @@ function setView(view) {
   const isList = view === "list";
   appShell.dataset.view = isList ? "list" : "map";
   listPanel.hidden = !isList;
-  mapPanel.hidden = false;
+  mapPanel.hidden = isList;
   viewToggle.textContent = isList ? "Map" : "List";
   viewToggle.setAttribute("aria-pressed", String(isList));
+  viewToggle.setAttribute("aria-label", isList ? "Show map view" : "Show list view");
+  updateTopbarClearance();
 
   if (!isList) {
-    window.requestAnimationFrame(() => map.invalidateSize());
+    window.requestAnimationFrame(() => {
+      map.invalidateSize();
+      renderMarkers();
+    });
+    window.setTimeout(() => map.invalidateSize(), 220);
   }
 }
 
 function refresh() {
+  closeSheet();
   renderMarkers();
   renderList();
-  closeSheet();
 }
 
 function initEvents() {
@@ -867,7 +1107,7 @@ function initEvents() {
     setView(appShell.dataset.view === "list" ? "map" : "list");
   });
 
-  mapReturn.addEventListener("click", () => setView("map"));
+  mapReturn?.addEventListener("click", () => setView("map"));
   sheetClose.addEventListener("click", closeSheet);
 
   map.on("click", closeSheet);
@@ -891,10 +1131,19 @@ function initEvents() {
     }
   });
 
-  window.addEventListener("resize", () => map.invalidateSize(), { passive: true });
+  window.addEventListener("resize", () => {
+    updateTopbarClearance();
+    map.invalidateSize();
+  }, { passive: true });
+
+  if ("ResizeObserver" in window && topbar) {
+    new ResizeObserver(updateTopbarClearance).observe(topbar);
+  }
 }
 
 populateFilter();
+updateTopbarClearance();
 renderMarkers();
 renderList();
 initEvents();
+setView("map");
