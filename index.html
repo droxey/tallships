@@ -14,7 +14,7 @@
     integrity="sha256-p4NxAoJBhIINfQjG+Z0h6I0hBoZw/ZcNYbBi6NtA="
     crossorigin=""
   >
-  <link rel="stylesheet" href="styles.css?v=20260707-5">
+  <link rel="stylesheet" href="styles.css?v=20260707-6">
 </head>
 <body>
   <a class="skip-link" href="#events-list">Skip to event list</a>
@@ -29,25 +29,30 @@
         </div>
       </div>
 
-      <div class="controls" role="group" aria-label="Map filters and view switcher">
+      <div class="controls" role="group" aria-label="Map filters and view tabs">
         <label class="select-wrap">
           <span>Date</span>
           <select id="date-filter" aria-label="Filter events by date"></select>
         </label>
-        <button id="view-toggle" class="button button-ghost" type="button" aria-pressed="false" aria-controls="map events-list-wrap">
-          List
-        </button>
+        <div class="view-tabs" role="tablist" aria-label="Choose list or map view">
+          <button id="list-tab" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="events-list-wrap">
+            List
+          </button>
+          <button id="map-tab" class="tab-button" type="button" role="tab" aria-selected="true" aria-controls="map-panel">
+            Map
+          </button>
+        </div>
       </div>
     </header>
 
-    <section id="map-panel" class="panel panel-map" aria-label="Tall ships event map">
+    <section id="map-panel" class="panel panel-map" role="tabpanel" aria-labelledby="map-tab" aria-label="Tall ships event map">
       <div id="map" role="application" aria-label="Interactive map of Tall Ships events"></div>
       <div class="map-hint" aria-live="polite">
         Tap a sail marker. Tap the map to close details.
       </div>
     </section>
 
-    <section id="events-list-wrap" class="panel panel-list" aria-labelledby="events-list-title" hidden>
+    <section id="events-list-wrap" class="panel panel-list" role="tabpanel" aria-labelledby="list-tab" hidden>
       <div class="list-header">
         <div>
           <h2 id="events-list-title">Events</h2>
@@ -94,6 +99,6 @@
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""
   ></script>
-  <script src="app.js?v=20260707-5" defer></script>
+  <script src="app.js?v=20260707-6" defer></script>
 </body>
 </html>

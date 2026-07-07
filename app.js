@@ -593,8 +593,8 @@ const EVENTS = [
 
 const appShell = document.querySelector(".app-shell");
 const dateFilter = document.querySelector("#date-filter");
-const viewToggle = document.querySelector("#view-toggle");
-const mapReturn = document.querySelector("#map-return");
+const mapTab = document.querySelector("#map-tab");
+const listTab = document.querySelector("#list-tab");
 const topbar = document.querySelector(".topbar");
 const listPanel = document.querySelector("#events-list-wrap");
 const mapPanel = document.querySelector("#map-panel");
@@ -1080,9 +1080,10 @@ function setView(view) {
   appShell.dataset.view = isList ? "list" : "map";
   listPanel.hidden = !isList;
   mapPanel.hidden = isList;
-  viewToggle.textContent = isList ? "Map" : "List";
-  viewToggle.setAttribute("aria-pressed", String(isList));
-  viewToggle.setAttribute("aria-label", isList ? "Show map view" : "Show list view");
+  mapTab?.setAttribute("aria-selected", String(!isList));
+  listTab?.setAttribute("aria-selected", String(isList));
+  mapTab?.setAttribute("tabindex", isList ? "-1" : "0");
+  listTab?.setAttribute("tabindex", isList ? "0" : "-1");
   updateTopbarClearance();
 
   if (!isList) {
@@ -1103,11 +1104,19 @@ function refresh() {
 function initEvents() {
   dateFilter.addEventListener("change", refresh);
 
-  viewToggle.addEventListener("click", () => {
-    setView(appShell.dataset.view === "list" ? "map" : "list");
+  mapTab?.addEventListener("click", () => setView("map"));
+  listTab?.addEventListener("click", () => setView("list"));
+
+  [mapTab, listTab].forEach((tab) => {
+    tab?.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        event.preventDefault();
+        setView(tab === mapTab ? "list" : "map");
+        (tab === mapTab ? listTab : mapTab)?.focus();
+      }
+    });
   });
 
-  mapReturn?.addEventListener("click", () => setView("map"));
   sheetClose.addEventListener("click", closeSheet);
 
   map.on("click", closeSheet);
