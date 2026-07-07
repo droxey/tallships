@@ -19,13 +19,15 @@
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
-  --topbar-clearance: calc(188px + var(--safe-top));
-  --sheet-clearance: calc(188px + var(--safe-top));
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
 }
 
 * {
   box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 html,
@@ -102,7 +104,7 @@ a {
 
 .topbar {
   position: fixed;
-  z-index: 3000;
+  z-index: 1100;
   top: max(10px, calc(8px + var(--safe-top)));
   left: max(10px, calc(10px + var(--safe-left)));
   right: max(10px, calc(10px + var(--safe-right)));
@@ -115,17 +117,6 @@ a {
   background: rgba(251, 250, 246, 0.86);
   box-shadow: 0 12px 34px rgba(5, 21, 27, 0.18);
   backdrop-filter: blur(18px) saturate(1.05);
-  isolation: isolate;
-  pointer-events: none;
-}
-
-.topbar .brand,
-.topbar .controls,
-.topbar button,
-.topbar select,
-.topbar label,
-.topbar .view-tabs {
-  pointer-events: auto;
 }
 
 .brand {
@@ -171,9 +162,34 @@ h1 {
 
 .controls {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.view-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-width: 132px;
+  min-height: var(--touch);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 253, 247, 0.74);
+  padding: 3px;
+}
+
+.tab-button {
+  min-height: calc(var(--touch) - 8px);
+  border-radius: 13px;
+  background: transparent;
+  color: var(--navy);
+  font-weight: 850;
+}
+
+.tab-button[aria-selected="true"] {
+  background: var(--navy);
+  color: white;
+  box-shadow: 0 6px 18px rgba(5, 21, 27, 0.18);
 }
 
 .select-wrap {
@@ -195,47 +211,6 @@ select,
 .button {
   min-height: var(--touch);
   border-radius: 16px;
-}
-
-.view-tabs {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-  min-height: 46px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: rgba(11, 47, 58, 0.08);
-  padding: 4px;
-}
-
-.tab-button {
-  min-height: 38px;
-  border-radius: 14px;
-  background: transparent;
-  color: var(--navy);
-  font-weight: 850;
-  letter-spacing: -0.01em;
-  touch-action: manipulation;
-}
-
-.tab-button[aria-selected="true"] {
-  background: var(--navy);
-  color: white;
-  box-shadow: 0 8px 18px rgba(5, 21, 27, 0.2);
-}
-
-.tab-button[aria-selected="false"] {
-  background: rgba(255, 253, 247, 0.74);
-}
-
-.tab-button:active {
-  transform: translateY(1px);
-}
-
-/* Legacy guard: older HTML had a second return button. */
-#map-return,
-#view-toggle {
-  display: none !important;
 }
 
 select {
@@ -336,7 +311,7 @@ select {
   left: max(12px, calc(12px + var(--safe-left)));
   right: max(12px, calc(12px + var(--safe-right)));
   bottom: max(12px, calc(12px + var(--safe-bottom)));
-  max-height: min(68dvh, calc(100dvh - var(--sheet-clearance) - 18px));
+  max-height: min(68dvh, 620px);
   overflow: auto;
   overscroll-behavior: contain;
   transform: translateY(calc(100% + 32px));
@@ -462,29 +437,28 @@ select {
   line-height: 1.45;
 }
 
-.actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+.action-separator {
+  width: 100%;
+  height: 1px;
+  margin: 16px 0 0;
+  border: 0;
+  background: var(--line);
 }
 
-.sheet-actions-wrap {
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .actions .button {
   min-height: 52px;
   border-radius: 18px;
-  padding-inline: 10px;
-  text-align: center;
   text-decoration: none;
-  font-size: 0.84rem;
-  line-height: 1.08;
 }
 
-.button-calendar {
+.actions .button-wide {
   grid-column: 1 / -1;
 }
 
@@ -521,7 +495,7 @@ select {
   display: grid;
   grid-template-rows: auto 1fr;
   gap: 12px;
-  padding: calc(var(--topbar-clearance) + 8px) max(12px, calc(12px + var(--safe-right))) max(12px, calc(12px + var(--safe-bottom))) max(12px, calc(12px + var(--safe-left)));
+  padding: calc(126px + var(--safe-top)) max(12px, calc(12px + var(--safe-right))) max(12px, calc(12px + var(--safe-bottom))) max(12px, calc(12px + var(--safe-left)));
   background:
     radial-gradient(circle at 85% 12%, rgba(223, 243, 239, 0.95), transparent 30%),
     var(--paper);
@@ -531,7 +505,7 @@ select {
 .list-header {
   display: flex;
   align-items: end;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 12px;
   padding: 4px 2px;
 }
@@ -552,29 +526,16 @@ select {
 
 table {
   width: 100%;
-  min-width: 0;
+  min-width: 780px;
   border-collapse: collapse;
-  table-layout: fixed;
 }
-
-col.col-date { width: 19%; }
-col.col-time { width: 18%; }
-col.col-event { width: 40%; }
-col.col-type { width: 0; }
-col.col-reservation { width: 23%; }
 
 th,
 td {
-  padding: 12px 10px;
+  padding: 13px 12px;
   border-bottom: 1px solid var(--line);
   text-align: left;
   vertical-align: top;
-  overflow-wrap: anywhere;
-}
-
-th:nth-child(4),
-td:nth-child(4) {
-  display: none;
 }
 
 th {
@@ -599,7 +560,7 @@ tbody tr:focus-visible {
 
 td {
   color: var(--ink);
-  font-size: 0.86rem;
+  font-size: 0.92rem;
   line-height: 1.35;
 }
 
@@ -607,29 +568,14 @@ td strong {
   display: block;
   margin-bottom: 3px;
   color: var(--navy);
-  font-size: 0.94rem;
+  font-size: 0.98rem;
 }
 
 .list-note {
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
 }
 
-.app-shell[data-view="list"] .panel-map,
-.app-shell[data-view="list"] .map-hint {
-  visibility: hidden;
-}
-
-#events-list .chip {
-  min-height: auto;
-  padding: 5px 7px;
-  font-size: 0.68rem;
-  line-height: 1.15;
-}
-
-.app-shell[data-view="list"] .topbar {
-  z-index: 5000;
-}
 
 .noscript {
   position: fixed;
@@ -642,48 +588,6 @@ td strong {
   color: var(--ink);
   font-weight: 800;
   text-align: center;
-}
-
-@media (max-width: 430px) {
-  .topbar {
-    gap: 8px;
-    padding: 12px;
-  }
-
-  .controls {
-    gap: 8px;
-  }
-
-  select,
-  .button {
-    min-height: 52px;
-    border-radius: 18px;
-  }
-
-  .view-tabs {
-    min-height: 50px;
-    border-radius: 18px;
-  }
-
-  .tab-button {
-    min-height: 42px;
-    border-radius: 14px;
-    font-size: 1rem;
-  }
-
-  .panel-list {
-    padding-top: calc(var(--topbar-clearance) + 12px);
-  }
-
-  .table-shell {
-    border-radius: 20px;
-  }
-}
-
-@media (max-width: 374px) {
-  .actions {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (min-width: 760px) {
@@ -707,18 +611,7 @@ td strong {
   }
 
   .panel-list {
-    padding-top: var(--topbar-clearance);
-  }
-
-  col.col-date { width: 13%; }
-  col.col-time { width: 16%; }
-  col.col-event { width: 37%; }
-  col.col-type { width: 18%; }
-  col.col-reservation { width: 16%; }
-
-  th:nth-child(4),
-  td:nth-child(4) {
-    display: table-cell;
+    padding-top: calc(92px + var(--safe-top));
   }
 }
 
