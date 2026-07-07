@@ -616,12 +616,24 @@ const map = L.map("map", {
 
 L.control.zoom({ position: "bottomright" }).addTo(map);
 
-L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 19,
-  attribution: "&copy; OpenStreetMap contributors"
+const tileLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+  subdomains: "abcd",
+  maxZoom: 20,
+  keepBuffer: 4,
+  updateWhenIdle: false,
+  updateWhenZooming: true,
+  crossOrigin: true,
+  attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
 }).addTo(map);
 
 const markerLayer = L.layerGroup().addTo(map);
+let mapRepairTimer = null;
+let mapTileErrorCount = 0;
+
+tileLayer.on("tileerror", () => {
+  mapTileErrorCount += 1;
+  if (mapTileErrorCount === 3) scheduleMapRepair({ refit: false, redrawTiles: true });
+});
 
 function formatDate(dateString) {
   const [year, month, day] = dateString.split("-").map(Number);
@@ -718,9 +730,43 @@ function renderMarkers() {
     markers.set(event.id, marker);
   });
 
-  if (visible.length) {
-    const bounds = L.latLngBounds(visible.map((event) => [event.lat, event.lng]));
-    map.fitBounds(bounds.pad(0.16), { animate: false, maxZoom: 13 });
+  fitVisibleMarkers();
+}
+
+function fitVisibleMarkers() {
+  const visible = currentEvents();
+  if (!visible.length || appShell.dataset.view !== "map" || mapPanel.hidden) return;
+
+  const bounds = L.latLngBounds(visible.map((event) => [event.lat, event.lng]));
+  map.fitBounds(bounds.pad(0.16), {
+    animate: false,
+    maxZoom: 13,
+    paddingTopLeft: [18, 168],
+    paddingBottomRight: [18, 76]
+  });
+}
+
+function repairMapLayout({ refit = false, redrawTiles = false } = {}) {
+  if (appShell.dataset.view !== "map" || mapPanel.hidden) return;
+
+  map.invalidateSize({ animate: false, pan: false });
+  if (refit) fitVisibleMarkers();
+  if (redrawTiles && tileLayer.redraw) tileLayer.redraw();
+}
+
+function scheduleMapRepair(options = {}) {
+  window.clearTimeout(mapRepairTimer);
+  window.requestAnimationFrame(() => {
+    repairMapLayout(options);
+    window.requestAnimationFrame(() => repairMapLayout(options));
+  });
+
+  [80, 180, 360, 720, 1200].forEach((delay) => {
+    window.setTimeout(() => repairMapLayout(options), delay);
+  });
+
+  if (options.redrawTiles) {
+    mapRepairTimer = window.setTimeout(() => repairMapLayout(options), 1600);
   }
 }
 
@@ -1022,15 +1068,14 @@ function setView(view) {
   if (!isList) {
     mapPanel.hidden = false;
     window.requestAnimationFrame(() => {
-      map.invalidateSize();
+      repairMapLayout({ refit: false });
       renderMarkers();
       if (activeEventId && markers.has(activeEventId)) {
         const event = EVENTS.find((item) => item.id === activeEventId);
         if (event) map.panTo([event.lat, event.lng], { animate: false });
       }
+      scheduleMapRepair({ refit: false, redrawTiles: false });
     });
-    window.setTimeout(() => map.invalidateSize(), 80);
-    window.setTimeout(() => map.invalidateSize(), 260);
   }
 }
 
@@ -1039,7 +1084,7 @@ function refresh() {
   renderMarkers();
   renderList();
   if (appShell.dataset.view === "map") {
-    window.requestAnimationFrame(() => map.invalidateSize());
+    scheduleMapRepair({ refit: true, redrawTiles: false });
   }
 }
 
@@ -1070,7 +1115,23 @@ function initEvents() {
     }
   });
 
-  window.addEventListener("resize", () => map.invalidateSize(), { passive: true });
+  window.addEventListener("resize", () => scheduleMapRepair({ refit: false }), { passive: true });
+  window.addEventListener("orientationchange", () => scheduleMapRepair({ refit: true, redrawTiles: true }), { passive: true });
+  window.addEventListener("load", () => scheduleMapRepair({ refit: true, redrawTiles: true }), { once: true });
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) scheduleMapRepair({ refit: false, redrawTiles: true });
+  });
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", () => scheduleMapRepair({ refit: false }), { passive: true });
+    window.visualViewport.addEventListener("scroll", () => scheduleMapRepair({ refit: false }), { passive: true });
+  }
+
+  if ("ResizeObserver" in window) {
+    const mapObserver = new ResizeObserver(() => scheduleMapRepair({ refit: false }));
+    mapObserver.observe(document.querySelector("#map"));
+    mapObserver.observe(mapPanel);
+  }
 }
 
 appShell.dataset.view = "map";
@@ -1083,5 +1144,4 @@ renderList();
 setView("map");
 initEvents();
 
-window.requestAnimationFrame(() => map.invalidateSize());
-window.setTimeout(() => map.invalidateSize(), 250);
+scheduleMapRepair({ refit: true, redrawTiles: true });

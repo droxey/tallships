@@ -34,6 +34,7 @@ html,
 body {
   width: 100%;
   min-width: 320px;
+  min-height: 100%;
   height: 100%;
   margin: 0;
   overflow: hidden;
@@ -93,8 +94,11 @@ a {
 }
 
 .app-shell {
-  position: relative;
+  position: fixed;
+  inset: 0;
   width: 100vw;
+  height: 100vh;
+  height: 100svh;
   height: 100dvh;
   overflow: hidden;
   background:
@@ -246,6 +250,8 @@ select {
 .panel {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .panel-map {
@@ -270,9 +276,24 @@ select {
 }
 
 #map {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
+  min-height: 100%;
   background: #dbe9ed;
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  background: #dbe9ed;
+  font: inherit;
+}
+
+.leaflet-tile-container img {
+  max-width: none !important;
 }
 
 .map-hint {
