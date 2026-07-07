@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b2f3a">
+  <meta name="description" content="A mobile-first Sail Boston 2026 tall ships event map with date filters, list view, map links, and share buttons.">
+  <title>Sail Boston 2026 — Tall Ships Map</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://tile.openstreetmap.org">
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIINfQjG+Z0h6I0hBoZw/ZcNYbBi6NtA="
+    crossorigin=""
+  >
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#events-list">Skip to event list</a>
+
+  <main class="app-shell" data-view="map">
+    <header class="topbar" aria-label="Tall ships event controls">
+      <div class="brand" aria-label="Sail Boston 2026">
+        <span class="brand-mark" aria-hidden="true">⛵</span>
+        <div>
+          <h1>Tall Ships</h1>
+          <p>Boston Harbor · July 2026</p>
+        </div>
+      </div>
+
+      <div class="controls" role="group" aria-label="Map filters and view switcher">
+        <label class="select-wrap">
+          <span>Date</span>
+          <select id="date-filter" aria-label="Filter events by date"></select>
+        </label>
+        <button id="view-toggle" class="button button-ghost" type="button" aria-pressed="false" aria-controls="map events-list-wrap">
+          List
+        </button>
+      </div>
+    </header>
+
+    <section id="map-panel" class="panel panel-map" aria-label="Tall ships event map">
+      <div id="map" role="application" aria-label="Interactive map of Tall Ships events"></div>
+      <div class="map-hint" aria-live="polite">
+        Tap a sail marker. Tap the map to close details.
+      </div>
+    </section>
+
+    <section id="events-list-wrap" class="panel panel-list" aria-labelledby="events-list-title" hidden>
+      <div class="list-header">
+        <div>
+          <h2 id="events-list-title">Events</h2>
+          <p id="list-summary">All known events are shown.</p>
+        </div>
+        <button id="map-return" class="button button-primary" type="button">Map</button>
+      </div>
+      <div class="table-shell" tabindex="0" aria-label="Scrollable event table">
+        <table id="events-list">
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col">Time</th>
+              <th scope="col">Event</th>
+              <th scope="col">Type</th>
+              <th scope="col">Reservation</th>
+            </tr>
+          </thead>
+          <tbody id="events-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside id="event-sheet" class="event-sheet" aria-live="polite" aria-hidden="true">
+      <button id="sheet-close" class="sheet-close" type="button" aria-label="Close event details">×</button>
+      <div id="sheet-content"></div>
+    </aside>
+  </main>
+
+  <noscript>
+    <div class="noscript">
+      This map requires JavaScript. The static event data is available in app.js.
+    </div>
+  </noscript>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
