@@ -591,34 +591,122 @@ const EVENTS = [
   }
 ];
 
-
 const BOSTON_HARBOR_CENTER = [42.3532, -71.0430];
-const BOSTON_HARBOR_ZOOM = 13;
-const BOSTON_TIME_ZONE = "America/New_York";
-const FALLBACK_TILE_SVG = "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><rect width="256" height="256" fill="#dbe9ed"/><path d="M0 180c38-18 72-18 104 0s68 18 108 0 44-18 44-18v94H0z" fill="#c9dde4" opacity=".75"/><path d="M32 88h192M32 128h192M32 168h192M88 32v192M128 32v192M168 32v192" stroke="#a7c1cb" stroke-width="1" opacity=".32"/></svg>`);
+const DEFAULT_ZOOM = 13;
+const DATE_FILTER_ALL = "all";
+
+const LEAFLET_CSS_URLS = [
+  "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css",
+  "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css",
+  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+];
+
+const LEAFLET_JS_URLS = [
+  "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js",
+  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+];
+
+const TILE_PROVIDERS = [
+  {
+    name: "CARTO Voyager",
+    url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    subdomains: "abcd",
+    attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+  },
+  {
+    name: "CARTO Positron",
+    url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    subdomains: "abcd",
+    attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+  },
+  {
+    name: "OpenStreetMap",
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    subdomains: "abc",
+    attribution: "&copy; OpenStreetMap contributors"
+  }
+];
 
 const appShell = document.querySelector(".app-shell");
 const dateFilter = document.querySelector("#date-filter");
-const listPanel = document.querySelector("#events-list-wrap");
-const mapPanel = document.querySelector("#map-panel");
-const mapEl = document.querySelector("#map");
 const listTab = document.querySelector("#list-tab");
 const mapTab = document.querySelector("#map-tab");
+const listPanel = document.querySelector("#events-list-wrap");
+const mapPanel = document.querySelector("#map-panel");
 const tbody = document.querySelector("#events-tbody");
 const listSummary = document.querySelector("#list-summary");
 const sheet = document.querySelector("#event-sheet");
 const sheetContent = document.querySelector("#sheet-content");
 const sheetClose = document.querySelector("#sheet-close");
+const mapHint = document.querySelector(".map-hint");
 
+let map = null;
+let markerLayer = null;
 let activeEventId = null;
 let activeMarker = null;
-let map;
-let tileLayer;
+let currentTileLayer = null;
+let currentTileProviderIndex = 0;
+let currentTileErrorCount = 0;
+let currentTileLoadCount = 0;
+let repairTimer = null;
 const markers = new Map();
 
-function syncViewportHeight() {
-  const height = window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight;
-  document.documentElement.style.setProperty("--app-height", `${Math.round(height)}px`);
+function loadStylesheet(url) {
+  return new Promise((resolve, reject) => {
+    if ([...document.styleSheets].some((sheetItem) => sheetItem.href === url)) {
+      resolve();
+      return;
+    }
+
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = url;
+    link.onload = () => resolve();
+    link.onerror = () => reject(new Error(`Failed stylesheet: ${url}`));
+    document.head.appendChild(link);
+  });
+}
+
+function loadScript(url) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = url;
+    script.async = false;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed script: ${url}`));
+    document.head.appendChild(script);
+  });
+}
+
+async function loadFirstWorking(urls, loader) {
+  let lastError = null;
+  for (const url of urls) {
+    try {
+      await loader(url);
+      return url;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error("No URL candidates supplied.");
+}
+
+async function ensureLeaflet() {
+  if (window.L?.map) return;
+
+  await Promise.all([
+    loadFirstWorking(LEAFLET_CSS_URLS, loadStylesheet),
+    loadFirstWorking(LEAFLET_JS_URLS, loadScript)
+  ]);
+
+  if (!window.L?.map) {
+    throw new Error("Leaflet loaded but window.L.map is unavailable.");
+  }
+}
+
+function setMapStatus(message) {
+  if (mapHint) mapHint.textContent = message;
 }
 
 function formatDate(dateString) {
@@ -640,7 +728,7 @@ function mapLink(address) {
 }
 
 function escapeHtml(value) {
-  return String(value)
+  return String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -648,199 +736,52 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function escapeIcs(value) {
-  return String(value)
-    .replaceAll("\\", "\\\\")
-    .replaceAll(";", "\\;")
-    .replaceAll(",", "\\,")
-    .replaceAll(/\r?\n/g, "\\n");
-}
-
-function slugify(value) {
-  return String(value)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 80) || "sail-boston-event";
-}
-
-function addDays(dateString, days) {
-  const [year, month, day] = dateString.split("-").map(Number);
-  const date = new Date(Date.UTC(year, month - 1, day + days));
-  return [
-    date.getUTCFullYear(),
-    String(date.getUTCMonth() + 1).padStart(2, "0"),
-    String(date.getUTCDate()).padStart(2, "0")
-  ].join("-");
-}
-
-function ymd(dateString) {
-  return dateString.replaceAll("-", "");
-}
-
-function icsDateTime(dateString, time) {
-  const [year, month, day] = dateString.split("-").map(Number);
-  return `${year}${String(month).padStart(2, "0")}${String(day).padStart(2, "0")}T${String(time.hours).padStart(2, "0")}${String(time.minutes).padStart(2, "0")}00`;
-}
-
-function toMinutes(time) {
-  return time.hours * 60 + time.minutes;
-}
-
-function fromMinutes(minutes) {
-  const normalized = ((minutes % 1440) + 1440) % 1440;
-  return { hours: Math.floor(normalized / 60), minutes: normalized % 60 };
-}
-
-function parseClockToken(rawToken, inheritedPeriod = "") {
-  const token = String(rawToken || "").trim().replace(/\./g, "");
-  const match = token.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i);
-  if (!match) return null;
-
-  let hours = Number(match[1]);
-  const minutes = Number(match[2] || 0);
-  const period = (match[3] || inheritedPeriod || "").toUpperCase();
-
-  if (period === "PM" && hours < 12) hours += 12;
-  if (period === "AM" && hours === 12) hours = 0;
-
-  return { hours, minutes, period };
-}
-
-function parseEventTime(timeText) {
-  const normalized = String(timeText || "")
-    .replace(/[–—]/g, "-")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (!/\d/.test(normalized)) return null;
-
-  const rangeParts = normalized.split("-").map((part) => part.trim()).filter(Boolean);
-  const endPeriodMatch = rangeParts.at(-1)?.match(/\b(AM|PM)\b/i);
-  const inheritedPeriod = endPeriodMatch?.[1] || "";
-  const start = parseClockToken(rangeParts[0], inheritedPeriod);
-  if (!start) return null;
-
-  let end = null;
-  if (rangeParts.length > 1) {
-    end = parseClockToken(rangeParts[1], start.period || inheritedPeriod);
-    if (end && toMinutes(end) <= toMinutes(start)) {
-      end = fromMinutes(toMinutes(end) + 12 * 60);
-    }
-  }
-
-  if (!end) end = fromMinutes(toMinutes(start) + 60);
-  return { start, end };
-}
-
-function sortKey(event) {
-  const parsed = parseEventTime(event.time);
-  const minutes = parsed ? toMinutes(parsed.start) : 9999;
-  return `${event.startDate}-${String(minutes).padStart(4, "0")}-${event.title}`;
-}
-
 function eventMatchesDate(event, selectedDate) {
-  if (selectedDate === "all") return true;
+  if (selectedDate === DATE_FILTER_ALL) return true;
   return event.startDate <= selectedDate && selectedDate <= event.endDate;
 }
 
+function startMinutes(time) {
+  if (!time || /multi|varies|tbd|hours/i.test(time)) return 24 * 60;
+  const match = time.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i);
+  if (!match) return 24 * 60;
+
+  let hours = Number(match[1]);
+  const minutes = Number(match[2] || 0);
+  const meridian = match[3]?.toUpperCase();
+
+  if (meridian === "PM" && hours !== 12) hours += 12;
+  if (meridian === "AM" && hours === 12) hours = 0;
+  return hours * 60 + minutes;
+}
+
 function currentEvents() {
-  const selectedDate = dateFilter.value || "all";
+  const selectedDate = dateFilter?.value || DATE_FILTER_ALL;
   return EVENTS
     .filter((event) => eventMatchesDate(event, selectedDate))
-    .sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
+    .sort((a, b) => {
+      const dateCompare = a.startDate.localeCompare(b.startDate);
+      if (dateCompare !== 0) return dateCompare;
+      const timeCompare = startMinutes(a.time) - startMinutes(b.time);
+      if (timeCompare !== 0) return timeCompare;
+      return a.title.localeCompare(b.title);
+    });
 }
 
 function populateFilter() {
+  if (!dateFilter) return;
   dateFilter.innerHTML = [
-    `<option value="all">All</option>`,
+    `<option value="${DATE_FILTER_ALL}">All</option>`,
     ...EVENT_DATES.map((date) => `<option value="${date}">${formatDate(date)}</option>`)
   ].join("");
-  dateFilter.value = "all";
+  dateFilter.value = DATE_FILTER_ALL;
 }
 
-function initMap() {
-  if (!window.L) {
-    mapEl.innerHTML = `<div class="map-error">Map library failed to load. Refresh this page.</div>`;
-    return;
-  }
-
-  map = L.map("map", {
-    center: BOSTON_HARBOR_CENTER,
-    zoom: BOSTON_HARBOR_ZOOM,
-    zoomControl: false,
-    tap: true,
-    keyboard: true,
-    preferCanvas: false,
-    scrollWheelZoom: true,
-    worldCopyJump: true
-  });
-
-  L.control.zoom({ position: "bottomright" }).addTo(map);
-
-  tileLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png", {
-    subdomains: "abcd",
-    minZoom: 3,
-    maxZoom: 19,
-    tileSize: 256,
-    keepBuffer: 6,
-    updateWhenIdle: false,
-    updateWhenZooming: false,
-    detectRetina: false,
-    crossOrigin: true,
-    errorTileUrl: FALLBACK_TILE_SVG,
-    attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
-  }).addTo(map);
-
-  tileLayer.on("tileerror", (event) => {
-    const tile = event.tile;
-    const retryCount = Number(tile.dataset.retryCount || "0");
-    if (retryCount >= 3) return;
-    tile.dataset.retryCount = String(retryCount + 1);
-
-    window.setTimeout(() => {
-      const coords = event.coords || {};
-      if (retryCount === 0 && Number.isFinite(coords.x) && Number.isFinite(coords.y) && Number.isFinite(coords.z)) {
-        const subdomain = ["a", "b", "c"][(Math.abs(coords.x + coords.y + coords.z)) % 3];
-        tile.src = `https://${subdomain}.tile.openstreetmap.org/${coords.z}/${coords.x}/${coords.y}.png?retry=${Date.now()}`;
-        return;
-      }
-
-      try {
-        const url = new URL(tile.src);
-        url.searchParams.set("retry", `${Date.now()}-${retryCount + 1}`);
-        tile.src = url.toString();
-      } catch {
-        tile.src = `${tile.src}${tile.src.includes("?") ? "&" : "?"}retry=${Date.now()}`;
-      }
-    }, 260 + retryCount * 420);
-  });
-
-  tileLayer.on("load", () => scheduleMapRepair("tiles-loaded", { keepCenter: true }));
-
-  markerLayer = L.layerGroup().addTo(map);
-  scheduleMapRepair("init", { resetHarbor: true });
+function selectedDateIsAll() {
+  return (dateFilter?.value || DATE_FILTER_ALL) === DATE_FILTER_ALL;
 }
 
-let markerLayer;
-
-function scheduleMapRepair(_reason = "repair", options = {}) {
-  if (!map) return;
-  const steps = [0, 50, 150, 350, 700, 1200];
-  window.requestAnimationFrame(() => repairMap(options));
-  steps.forEach((delay) => window.setTimeout(() => repairMap(options), delay));
-}
-
-function repairMap(options = {}) {
-  if (!map || appShell.dataset.view !== "map" || mapPanel.hidden) return;
-  syncViewportHeight();
-  map.invalidateSize({ animate: false, pan: false });
-  if (options.resetHarbor) {
-    map.setView(BOSTON_HARBOR_CENTER, BOSTON_HARBOR_ZOOM, { animate: false });
-  }
-}
-
-function createIcon(_event, isActive = false) {
+function createIcon(event, isActive = false) {
   const className = `sail-marker${isActive ? " is-active" : ""}`;
   return L.divIcon({
     className: "sail-marker-wrap",
@@ -850,26 +791,35 @@ function createIcon(_event, isActive = false) {
   });
 }
 
-function resetActiveMarker() {
-  if (activeMarker) {
-    const previousEvent = EVENTS.find((item) => item.id === activeEventId);
-    if (previousEvent) activeMarker.setIcon(createIcon(previousEvent, false));
+function resetMapToBostonHarbor() {
+  if (!map) return;
+  map.setView(BOSTON_HARBOR_CENTER, DEFAULT_ZOOM, { animate: false });
+}
+
+function fitVisibleEvents(events) {
+  if (!map || !events.length) return;
+
+  if (selectedDateIsAll()) {
+    resetMapToBostonHarbor();
+    return;
   }
-  activeEventId = null;
-  activeMarker = null;
+
+  if (events.length === 1) {
+    map.setView([events[0].lat, events[0].lng], Math.max(DEFAULT_ZOOM, 14), { animate: false });
+    return;
+  }
+
+  const bounds = L.latLngBounds(events.map((event) => [event.lat, event.lng]));
+  map.fitBounds(bounds.pad(0.18), { animate: false, maxZoom: 14 });
 }
 
 function renderMarkers() {
-  if (!map || !markerLayer) return;
+  if (!markerLayer || !map) return;
+
   markerLayer.clearLayers();
   markers.clear();
 
   const visible = currentEvents();
-  const visibleIds = new Set(visible.map((event) => event.id));
-  if (activeEventId && !visibleIds.has(activeEventId)) {
-    closeSheet();
-  }
-
   visible.forEach((event) => {
     const marker = L.marker([event.lat, event.lng], {
       icon: createIcon(event, event.id === activeEventId),
@@ -894,24 +844,13 @@ function renderMarkers() {
     markers.set(event.id, marker);
   });
 
-  if (!visible.length) return;
-
-  if ((dateFilter.value || "all") === "all") {
-    map.setView(BOSTON_HARBOR_CENTER, BOSTON_HARBOR_ZOOM, { animate: false });
-  } else {
-    const bounds = L.latLngBounds(visible.map((event) => [event.lat, event.lng]));
-    map.fitBounds(bounds.pad(0.16), {
-      animate: false,
-      maxZoom: 14,
-      paddingTopLeft: [24, 170],
-      paddingBottomRight: [24, 88]
-    });
-  }
-
-  scheduleMapRepair("markers-rendered", { keepCenter: true });
+  fitVisibleEvents(visible);
+  repairMapSoon("markers");
 }
 
 function renderList() {
+  if (!tbody) return;
+
   const rows = currentEvents().map((event) => `
     <tr tabindex="0" data-event-id="${escapeHtml(event.id)}">
       <td>${escapeHtml(dateRangeLabel(event))}</td>
@@ -920,17 +859,115 @@ function renderList() {
         <strong>${escapeHtml(event.title)}</strong>
         <span class="list-note">${escapeHtml(event.address)}</span>
       </td>
-      <td class="optional-cell">${escapeHtml(event.type)}</td>
-      <td class="optional-cell"><span class="chip ${escapeHtml(event.reservationClass)}">${escapeHtml(event.reservation)}</span></td>
+      <td>${escapeHtml(event.type)}</td>
+      <td><span class="chip ${escapeHtml(event.reservationClass)}">${escapeHtml(event.reservation)}</span></td>
     </tr>
   `);
 
   tbody.innerHTML = rows.join("");
   const count = rows.length;
-  const selectedDate = dateFilter.value || "all";
-  listSummary.textContent = selectedDate === "all"
-    ? `${count} known event${count === 1 ? "" : "s"} shown.`
-    : `${count} event${count === 1 ? "" : "s"} on ${formatDate(selectedDate)}.`;
+  const selectedDate = dateFilter?.value || DATE_FILTER_ALL;
+  if (listSummary) {
+    listSummary.textContent = selectedDate === DATE_FILTER_ALL
+      ? `${count} known event${count === 1 ? "" : "s"} shown.`
+      : `${count} event${count === 1 ? "" : "s"} on ${formatDate(selectedDate)}.`;
+  }
+}
+
+function googleCalendarDate(dateString, fallbackTime = "09:00") {
+  const [hour, minute] = fallbackTime.split(":").map(Number);
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day, hour, minute, 0);
+}
+
+function parseCalendarDates(event) {
+  const firstTime = event.time.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i);
+  const secondTime = event.time.match(/[–-]\s*(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i);
+  const fallbackStart = event.time.toLowerCase().includes("evening") ? "18:00" : "09:00";
+
+  const convert = (match, fallback) => {
+    if (!match) return fallback;
+    let hours = Number(match[1]);
+    const minutes = Number(match[2] || 0);
+    const meridian = match[3]?.toUpperCase();
+    if (meridian === "PM" && hours !== 12) hours += 12;
+    if (meridian === "AM" && hours === 12) hours = 0;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+  };
+
+  const startClock = convert(firstTime, fallbackStart);
+  const endClock = convert(secondTime, null);
+  const start = googleCalendarDate(event.startDate, startClock);
+  let end;
+
+  if (endClock) {
+    end = googleCalendarDate(event.startDate, endClock);
+    if (end <= start) end.setDate(end.getDate() + 1);
+  } else if (event.startDate !== event.endDate && /multi|hours|varies|tbd/i.test(event.time)) {
+    end = googleCalendarDate(event.endDate, "17:00");
+  } else {
+    end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+  }
+
+  return { start, end };
+}
+
+function icsDate(date) {
+  return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+}
+
+function escapeIcs(value) {
+  return String(value ?? "")
+    .replaceAll("\\", "\\\\")
+    .replaceAll(";", "\\;")
+    .replaceAll(",", "\\,")
+    .replaceAll("\n", "\\n");
+}
+
+function buildIcs(event) {
+  const { start, end } = parseCalendarDates(event);
+  const sourceLines = event.sources.map((source) => `${source.label}: ${source.url}`).join("\n");
+  const description = [
+    event.notes,
+    `Type: ${event.type}`,
+    `Reservation: ${event.reservation}`,
+    `Open Maps: ${mapLink(event.address)}`,
+    sourceLines ? `Sources:\n${sourceLines}` : ""
+  ].filter(Boolean).join("\n\n");
+
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Droxey//Tall Ships Boston//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:${event.id}@tallships.droxey.com`,
+    `DTSTAMP:${icsDate(new Date())}`,
+    `DTSTART:${icsDate(start)}`,
+    `DTEND:${icsDate(end)}`,
+    `SUMMARY:${escapeIcs(event.title)}`,
+    `LOCATION:${escapeIcs(event.address)}`,
+    `GEO:${event.lat};${event.lng}`,
+    `DESCRIPTION:${escapeIcs(description)}`,
+    `URL:${mapLink(event.address)}`,
+    "END:VEVENT",
+    "END:VCALENDAR"
+  ].join("\r\n");
+}
+
+function addToCalendar(event) {
+  const ics = buildIcs(event);
+  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${event.id}.ics`;
+  link.target = "_blank";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
 function renderSheet(event) {
@@ -960,7 +997,7 @@ function renderSheet(event) {
         </div>
       </div>
       <p class="notes">${escapeHtml(event.notes)}</p>
-      <hr class="sheet-separator" aria-hidden="true">
+      <div class="sheet-actions-separator" aria-hidden="true"></div>
       <div class="actions">
         <a class="button button-primary" href="${escapeHtml(mapLink(event.address))}" target="_blank" rel="noopener noreferrer">Open Maps</a>
         <button id="share-event" class="button button-ghost" type="button">Share</button>
@@ -997,80 +1034,6 @@ async function shareEvent(event) {
   }
 }
 
-function buildCalendarDescription(event) {
-  const sourceLines = event.sources.map((source) => `${source.label}: ${source.url}`).join("\n");
-  return [
-    event.notes,
-    "",
-    `Event type: ${event.type}`,
-    `Reservation: ${event.reservation}`,
-    `Address: ${event.address}`,
-    `Map: ${mapLink(event.address)}`,
-    "",
-    "Sources:",
-    sourceLines
-  ].join("\n");
-}
-
-function buildIcs(event) {
-  const parsed = parseEventTime(event.time);
-  const now = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
-  const uid = `${event.id}@droxey.com-tallships`;
-  const lines = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Droxey//Tall Ships Boston//EN",
-    "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH",
-    "BEGIN:VEVENT",
-    `UID:${uid}`,
-    `DTSTAMP:${now}`,
-    `SUMMARY:${escapeIcs(event.title)}`,
-    `LOCATION:${escapeIcs(event.address)}`,
-    `DESCRIPTION:${escapeIcs(buildCalendarDescription(event))}`,
-    `URL:${mapLink(event.address)}`,
-    `GEO:${event.lat};${event.lng}`
-  ];
-
-  if (parsed) {
-    lines.push(`DTSTART;TZID=${BOSTON_TIME_ZONE}:${icsDateTime(event.startDate, parsed.start)}`);
-    lines.push(`DTEND;TZID=${BOSTON_TIME_ZONE}:${icsDateTime(event.startDate, parsed.end)}`);
-  } else {
-    lines.push(`DTSTART;VALUE=DATE:${ymd(event.startDate)}`);
-    lines.push(`DTEND;VALUE=DATE:${ymd(addDays(event.endDate, 1))}`);
-  }
-
-  lines.push("END:VEVENT", "END:VCALENDAR");
-  return `${lines.join("\r\n")}\r\n`;
-}
-
-function isIOSLike() {
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-}
-
-function addToCalendar(event) {
-  const ics = buildIcs(event);
-  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const filename = `${slugify(event.title)}.ics`;
-
-  if (isIOSLike()) {
-    window.location.href = url;
-    window.setTimeout(() => URL.revokeObjectURL(url), 10000);
-    temporarySheetNotice("Calendar file opened. Use iOS share/import if prompted.");
-    return;
-  }
-
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 10000);
-  temporarySheetNotice("Calendar file created.");
-}
-
 function temporarySheetNotice(message) {
   const notice = document.createElement("p");
   notice.className = "notes";
@@ -1097,62 +1060,164 @@ function openEvent(eventId, options = {}) {
   sheet.classList.add("is-open");
   sheet.setAttribute("aria-hidden", "false");
 
-  if (options.pan && appShell.dataset.view === "map" && map) {
+  if (options.pan && appShell?.dataset.view === "map" && map) {
     map.panTo([event.lat, event.lng], { animate: true, duration: 0.22 });
-    scheduleMapRepair("open-event", { keepCenter: true });
+    repairMapSoon("open-event");
   }
 }
 
 function closeSheet() {
-  resetActiveMarker();
+  if (activeMarker) {
+    const previousEvent = EVENTS.find((item) => item.id === activeEventId);
+    if (previousEvent) activeMarker.setIcon(createIcon(previousEvent, false));
+  }
+
+  activeEventId = null;
+  activeMarker = null;
   sheet.classList.remove("is-open");
   sheet.setAttribute("aria-hidden", "true");
 }
 
+function setActiveTab(view) {
+  const isList = view === "list";
+  listTab?.setAttribute("aria-selected", String(isList));
+  mapTab?.setAttribute("aria-selected", String(!isList));
+}
+
 function setView(view) {
   const isList = view === "list";
-  appShell.dataset.view = isList ? "list" : "map";
-  listPanel.hidden = !isList;
-  mapPanel.hidden = isList;
-  listTab.setAttribute("aria-selected", String(isList));
-  mapTab.setAttribute("aria-selected", String(!isList));
+  if (appShell) appShell.dataset.view = isList ? "list" : "map";
+  if (listPanel) listPanel.hidden = !isList;
+  if (mapPanel) mapPanel.hidden = isList;
+  setActiveTab(isList ? "list" : "map");
 
-  if (isList) {
-    closeSheet();
-    return;
+  if (!isList) {
+    repairMapNow("set-view-map");
+    repairMapSoon("set-view-map");
   }
-
-  renderMarkers();
-  scheduleMapRepair("map-tab", { resetHarbor: (dateFilter.value || "all") === "all" });
 }
 
 function refresh() {
   closeSheet();
   renderMarkers();
   renderList();
+  if (appShell?.dataset.view === "map") repairMapSoon("refresh");
+}
+
+function installTileLayer(index = 0) {
+  if (!map) return;
+  currentTileProviderIndex = Math.min(index, TILE_PROVIDERS.length - 1);
+  currentTileErrorCount = 0;
+  currentTileLoadCount = 0;
+
+  if (currentTileLayer) {
+    map.removeLayer(currentTileLayer);
+    currentTileLayer = null;
+  }
+
+  const provider = TILE_PROVIDERS[currentTileProviderIndex];
+  currentTileLayer = L.tileLayer(provider.url, {
+    attribution: provider.attribution,
+    subdomains: provider.subdomains,
+    maxZoom: 20,
+    detectRetina: true,
+    crossOrigin: true,
+    updateWhenIdle: false,
+    updateWhenZooming: false,
+    keepBuffer: 4,
+    errorTileUrl: errorTileDataUrl(provider.name)
+  });
+
+  currentTileLayer.on("tileload", () => {
+    currentTileLoadCount += 1;
+    if (currentTileLoadCount === 1) setMapStatus("Tap a sail marker. Tap the map to close details.");
+  });
+
+  currentTileLayer.on("tileerror", () => {
+    currentTileErrorCount += 1;
+    if (currentTileErrorCount >= 3 && currentTileProviderIndex < TILE_PROVIDERS.length - 1) {
+      installTileLayer(currentTileProviderIndex + 1);
+      repairMapSoon("tile-provider-fallback");
+    } else if (currentTileProviderIndex === TILE_PROVIDERS.length - 1) {
+      setMapStatus("Map tiles are unavailable. Event markers still work.");
+    }
+  });
+
+  currentTileLayer.addTo(map);
+  currentTileLayer.bringToBack();
+  setMapStatus(`Loading map tiles: ${provider.name}`);
+}
+
+function errorTileDataUrl(label) {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+      <rect width="256" height="256" fill="#dbe9ed"/>
+      <path d="M0 210 C48 188 78 222 128 200 S208 188 256 212" fill="none" stroke="#aac7cf" stroke-width="12" opacity="0.85"/>
+      <text x="128" y="124" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#0b2f3a">${escapeHtml(label)}</text>
+    </svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function repairMapNow(reason = "repair") {
+  if (!map || appShell?.dataset.view === "list") return;
+  const mapElement = document.querySelector("#map");
+  if (!mapElement || mapElement.offsetWidth === 0 || mapElement.offsetHeight === 0) return;
+
+  map.invalidateSize({ animate: false, pan: false });
+
+  if (selectedDateIsAll()) {
+    const center = map.getCenter();
+    const drift = Math.abs(center.lat - BOSTON_HARBOR_CENTER[0]) + Math.abs(center.lng - BOSTON_HARBOR_CENTER[1]);
+    if (drift > 0.12 || map.getZoom() < 10) resetMapToBostonHarbor();
+  }
+}
+
+function repairMapSoon(reason = "repair") {
+  window.clearTimeout(repairTimer);
+  window.requestAnimationFrame(() => repairMapNow(reason));
+  repairTimer = window.setTimeout(() => repairMapNow(`${reason}-late`), 140);
+  window.setTimeout(() => repairMapNow(`${reason}-later`), 420);
+  window.setTimeout(() => repairMapNow(`${reason}-final`), 900);
+}
+
+function initMap() {
+  map = L.map("map", {
+    center: BOSTON_HARBOR_CENTER,
+    zoom: DEFAULT_ZOOM,
+    minZoom: 10,
+    maxZoom: 20,
+    zoomControl: false,
+    tap: true,
+    preferCanvas: true,
+    scrollWheelZoom: true,
+    worldCopyJump: false
+  });
+
+  L.control.zoom({ position: "bottomright" }).addTo(map);
+  markerLayer = L.layerGroup().addTo(map);
+  installTileLayer(0);
+
+  map.on("click", closeSheet);
+  map.on("touchstart", closeSheet);
+  map.whenReady(() => repairMapSoon("map-ready"));
 }
 
 function initEvents() {
-  dateFilter.addEventListener("change", refresh);
-  listTab.addEventListener("click", () => setView("list"));
-  mapTab.addEventListener("click", () => setView("map"));
-  sheetClose.addEventListener("click", closeSheet);
+  dateFilter?.addEventListener("change", refresh);
+  listTab?.addEventListener("click", () => setView("list"));
+  mapTab?.addEventListener("click", () => setView("map"));
+  sheetClose?.addEventListener("click", closeSheet);
 
-  if (map) {
-    map.on("click", closeSheet);
-    map.on("touchstart", closeSheet);
-  }
+  sheet?.addEventListener("click", (event) => event.stopPropagation());
+  sheet?.addEventListener("touchstart", (event) => event.stopPropagation(), { passive: true });
 
-  sheet.addEventListener("click", (event) => event.stopPropagation());
-  sheet.addEventListener("touchstart", (event) => event.stopPropagation(), { passive: true });
-
-  tbody.addEventListener("click", (event) => {
+  tbody?.addEventListener("click", (event) => {
     const row = event.target.closest("tr[data-event-id]");
     if (!row) return;
     openEvent(row.dataset.eventId);
   });
 
-  tbody.addEventListener("keydown", (event) => {
+  tbody?.addEventListener("keydown", (event) => {
     const row = event.target.closest("tr[data-event-id]");
     if (!row) return;
     if (event.key === "Enter" || event.key === " ") {
@@ -1161,37 +1226,37 @@ function initEvents() {
     }
   });
 
-  window.addEventListener("resize", () => scheduleMapRepair("resize", { keepCenter: true }), { passive: true });
-  window.addEventListener("orientationchange", () => scheduleMapRepair("orientation", { keepCenter: true }), { passive: true });
-  window.addEventListener("pageshow", () => scheduleMapRepair("pageshow", { resetHarbor: (dateFilter.value || "all") === "all" }), { passive: true });
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) scheduleMapRepair("visibility", { keepCenter: true });
-  });
+  window.addEventListener("resize", () => repairMapSoon("resize"), { passive: true });
+  window.addEventListener("orientationchange", () => repairMapSoon("orientation"), { passive: true });
+  window.addEventListener("pageshow", () => repairMapSoon("pageshow"), { passive: true });
 
   if (window.visualViewport) {
-    window.visualViewport.addEventListener("resize", () => scheduleMapRepair("visualViewport-resize", { keepCenter: true }), { passive: true });
-    window.visualViewport.addEventListener("scroll", () => scheduleMapRepair("visualViewport-scroll", { keepCenter: true }), { passive: true });
+    window.visualViewport.addEventListener("resize", () => repairMapSoon("visual-viewport-resize"), { passive: true });
+    window.visualViewport.addEventListener("scroll", () => repairMapSoon("visual-viewport-scroll"), { passive: true });
   }
 
-  if (window.ResizeObserver) {
-    const observer = new ResizeObserver(() => scheduleMapRepair("map-resize", { keepCenter: true }));
-    observer.observe(mapEl);
+  const mapElement = document.querySelector("#map");
+  if (window.ResizeObserver && mapElement) {
+    new ResizeObserver(() => repairMapSoon("resize-observer")).observe(mapElement);
   }
 }
 
-function boot() {
-  syncViewportHeight();
-  populateFilter();
-  appShell.dataset.view = "map";
-  mapPanel.hidden = false;
-  listPanel.hidden = true;
-  listTab.setAttribute("aria-selected", "false");
-  mapTab.setAttribute("aria-selected", "true");
-  initMap();
-  renderMarkers();
-  renderList();
-  initEvents();
-  scheduleMapRepair("boot", { resetHarbor: true });
+async function boot() {
+  try {
+    setView("map");
+    populateFilter();
+    await ensureLeaflet();
+    initMap();
+    renderMarkers();
+    renderList();
+    initEvents();
+    resetMapToBostonHarbor();
+    repairMapSoon("boot");
+  } catch (error) {
+    console.error(error);
+    setMapStatus("Map failed to load. Use the List tab for event details.");
+    renderList();
+  }
 }
 
 boot();
