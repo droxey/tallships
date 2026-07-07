@@ -1007,21 +1007,30 @@ function closeSheet() {
 }
 
 function setView(view) {
-  const isList = view === "list";
-  appShell.dataset.view = isList ? "list" : "map";
+  const normalizedView = view === "list" ? "list" : "map";
+  const isList = normalizedView === "list";
+
+  appShell.dataset.view = normalizedView;
   listPanel.hidden = !isList;
   mapPanel.hidden = isList;
+
   listTab.setAttribute("aria-selected", String(isList));
   mapTab.setAttribute("aria-selected", String(!isList));
   listTab.tabIndex = isList ? 0 : -1;
   mapTab.tabIndex = isList ? -1 : 0;
 
   if (!isList) {
+    mapPanel.hidden = false;
     window.requestAnimationFrame(() => {
       map.invalidateSize();
       renderMarkers();
+      if (activeEventId && markers.has(activeEventId)) {
+        const event = EVENTS.find((item) => item.id === activeEventId);
+        if (event) map.panTo([event.lat, event.lng], { animate: false });
+      }
     });
-    window.setTimeout(() => map.invalidateSize(), 220);
+    window.setTimeout(() => map.invalidateSize(), 80);
+    window.setTimeout(() => map.invalidateSize(), 260);
   }
 }
 
@@ -1064,8 +1073,15 @@ function initEvents() {
   window.addEventListener("resize", () => map.invalidateSize(), { passive: true });
 }
 
+appShell.dataset.view = "map";
+mapPanel.hidden = false;
+listPanel.hidden = true;
+
 populateFilter();
 renderMarkers();
 renderList();
 setView("map");
 initEvents();
+
+window.requestAnimationFrame(() => map.invalidateSize());
+window.setTimeout(() => map.invalidateSize(), 250);
