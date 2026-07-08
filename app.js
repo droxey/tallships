@@ -4,10 +4,6 @@
 */
 
 const EVENT_DATES = [
-  "2026-07-07",
-  "2026-07-08",
-  "2026-07-09",
-  "2026-07-10",
   "2026-07-11",
   "2026-07-12",
   "2026-07-13",
@@ -29,7 +25,7 @@ const EVENTS = [
     address: "Boston Harbor, Boston, MA",
     lat: 42.3528,
     lng: -71.0409,
-    notes: "Tracks tall ship movement toward Boston. Low practical value as a casual date unless booking the full expedition.",
+    notes: "Tracks tall ship movement toward Boston. Low practical value as a casual outing unless booking the full expedition.",
     sources: [
       { label: "Voyagers Club expedition", url: "https://voyagersclub.org/expeditions/nyc-boston" }
     ]
@@ -460,7 +456,7 @@ const EVENTS = [
     address: "Blue Hill Observatory, 1904 Canton Avenue, Milton, MA 02186",
     lat: 42.2143,
     lng: -71.1136,
-    notes: "Quirky elevated-view lead. Better as backup than the main nostalgia date.",
+    notes: "Quirky elevated-view lead. Better as backup than the main nostalgia outing.",
     sources: [
       { label: "Eventbrite listing", url: "https://www.eventbrite.com/e/tall-ships-and-chocolate-chips-tickets-1992586702466" }
     ]
@@ -572,6 +568,260 @@ const EVENTS = [
     ]
   },
   {
+    id: "castle-island-no-parking-advisory",
+    title: "Castle Island / Day Boulevard Parking Advisory Lead",
+    startDate: "2026-07-11",
+    endDate: "2026-07-15",
+    time: "All day / verify restrictions",
+    type: "Road-closure / parking advisory lead",
+    reservation: "Lead — verify before driving",
+    reservationClass: "recommended",
+    address: "William J. Day Boulevard at Castle Island, Boston, MA 02127",
+    lat: 42.3382,
+    lng: -71.0127,
+    notes: "Local-feedback lead: do not plan on Castle Island or Pleasure Bay curb parking during peak ship days. Expect closures, tow zones, pedestrian-only access, and rideshare drop-offs pushed away from Day Boulevard. Verify the Mass.gov/Sail Boston traffic plan close to event week.",
+    sources: [
+      { label: "Mass.gov Castle Island guidance", url: "https://www.mass.gov/info-details/sail-boston-2026-what-to-know-before-you-go-to-castle-island" },
+      { label: "Sail Boston official events", url: "https://www.sailboston.com/events/" }
+    ]
+  },
+  {
+    id: "south-boston-waterfront-garage-lead",
+    title: "South Boston Waterfront Garage / Seaport Parking Lead",
+    startDate: "2026-07-11",
+    endDate: "2026-07-15",
+    time: "Arrive very early / verify rates",
+    type: "Parking lead",
+    reservation: "Recommended — reserve/verify",
+    reservationClass: "recommended",
+    address: "12 Drydock Avenue, Boston, MA 02210",
+    lat: 42.3448,
+    lng: -71.0346,
+    notes: "Local-feedback lead for Fish Pier, Flynn Cruiseport, and Seaport festival access. Useful if you are willing to walk Harborwalk; published transient parking is commonly around $25 for 3–10 hours, but event pricing, sellouts, and garage access may change with security perimeters — reserve and verify before driving.",
+    sources: [
+      { label: "Boston Seaport parking information", url: "https://www.bostonseaport.xyz/transportation/parking/" },
+      { label: "Sail Boston official events", url: "https://www.sailboston.com/events/" }
+    ]
+  },
+  {
+    id: "bcec-lot-and-silver-line-lead",
+    title: "BCEC / Silver Line Park-and-Walk Lead",
+    startDate: "2026-07-11",
+    endDate: "2026-07-15",
+    time: "All day / verify event operations",
+    type: "Parking + transit lead",
+    reservation: "Lead — verify availability",
+    reservationClass: "recommended",
+    address: "Boston Convention and Exhibition Center, 415 Summer Street, Boston, MA 02210",
+    lat: 42.3457,
+    lng: -71.0466,
+    notes: "Local-feedback lead: a practical Seaport staging point if official lots are open. BCEC self-parking is often listed around $25, but event rates/availability can change. Pair with Silver Line or a 15–25 minute walk to Fish Pier/Fan Pier; verify BCEC event parking, closures on Summer Street, and MBTA service alerts.",
+    sources: [
+      { label: "BCEC directions and parking", url: "https://www.signatureboston.com/bcec/getting-here" },
+      { label: "MBTA Silver Line", url: "https://www.mbta.com/schedules/741/line" }
+    ]
+  },
+  {
+    id: "southie-transit-advisory",
+    title: "South Boston Transit Strategy: Red Line + Walk/Bus Lead",
+    startDate: "2026-07-11",
+    endDate: "2026-07-15",
+    time: "Peak crowds / verify service alerts",
+    type: "Navigation advisory lead",
+    reservation: "No reservation found",
+    reservationClass: "free",
+    address: "Broadway Station, Dorchester Avenue, Boston, MA 02127",
+    lat: 42.3426,
+    lng: -71.0571,
+    notes: "Local-feedback lead: skip hunting for beach parking. Use Red Line to Broadway or Andrew, then walk or connect by bus/rideshare before closures tighten. Verify bus detours and station crowd control day-of.",
+    sources: [
+      { label: "MBTA service alerts", url: "https://www.mbta.com/alerts" },
+      { label: "MBTA Red Line", url: "https://www.mbta.com/schedules/Red/line" }
+    ]
+  },
+  {
+    id: "charlestown-navy-yard-dock-lead",
+    title: "Charlestown Navy Yard / Pier 1 Dock Location Lead",
+    startDate: "2026-07-11",
+    endDate: "2026-07-15",
+    time: "Ship boarding hours / verify assigned berths",
+    type: "Tall ship dock lead",
+    reservation: "No reservation found / verify berth list",
+    reservationClass: "free",
+    address: "Charlestown Navy Yard, Boston, MA 02129",
+    lat: 42.3734,
+    lng: -71.0560,
+    notes: "Local-feedback lead: strong historic-dock area near USS Constitution and Pier 6. Treat exact ship assignments as TBD until Sail Boston publishes final berth maps; expect screening and one-way pedestrian flows.",
+    sources: [
+      { label: "Sail Boston events", url: "https://www.sailboston.com/events/" },
+      { label: "USS Constitution Museum visit page", url: "https://ussconstitutionmuseum.org/plan-your-visit/" }
+    ]
+  },
+  {
+    id: "east-boston-piers-dock-lead",
+    title: "East Boston Piers / Tall Ship Boston Dock Lead",
+    startDate: "2026-07-11",
+    endDate: "2026-07-15",
+    time: "Ship boarding hours / verify access",
+    type: "Tall ship dock lead",
+    reservation: "Lead — verify public access",
+    reservationClass: "recommended",
+    address: "1 East Pier Drive, East Boston, MA 02128",
+    lat: 42.3642,
+    lng: -71.0352,
+    notes: "Local-feedback lead: East Boston offers skyline views and possible dock activity near the Tall Ship Boston. Verify whether piers are ticketed, private, or public on the day you go; Blue Line plus walking usually beats driving.",
+    sources: [
+      { label: "Tall Ship Boston", url: "https://www.tallshipboston.com/" },
+      { label: "MBTA Blue Line", url: "https://www.mbta.com/schedules/Blue/line" }
+    ]
+  },
+  {
+    id: "long-wharf-rowes-wharf-dock-lead",
+    title: "Long Wharf / Rowes Wharf Dock Cluster Lead",
+    startDate: "2026-07-10",
+    endDate: "2026-07-15",
+    time: "Varies / verify cruise and berth access",
+    type: "Tall ship dock + cruise departure lead",
+    reservation: "Lead — verify tickets/access",
+    reservationClass: "recommended",
+    address: "Long Wharf, Boston, MA 02110",
+    lat: 42.3596,
+    lng: -71.0499,
+    notes: "Local-feedback lead: useful hub for ticketed cruises, Aquarium/Blue Line access, and waterfront walks. Exact tall-ship dock access may be restricted, so verify wharf security and cruise check-in location before committing.",
+    sources: [
+      { label: "Sail Boston official events", url: "https://www.sailboston.com/events/" },
+      { label: "MBTA Aquarium Station", url: "https://www.mbta.com/stops/place-aqucl" }
+    ]
+  },
+  {
+    id: "legal-harpoon-pavilion-harborwalk-lead",
+    title: "Legal / Pavilion / Harpoon Harborwalk Viewing Corridor",
+    startDate: "2026-07-11",
+    endDate: "2026-07-15",
+    time: "Daytime / expect heavy crowds",
+    type: "Point of interest / viewing lead",
+    reservation: "No reservation found",
+    reservationClass: "free",
+    address: "Leader Bank Pavilion, 290 Northern Avenue, Boston, MA 02210",
+    lat: 42.3489,
+    lng: -71.0368,
+    notes: "Boston-local lead: if aiming for the Seaport, walk toward Legal Sea Foods, Leader Bank Pavilion, and Harpoon rather than stopping at the first waterfront edge. The Harborwalk/rock-wall areas may catch inbound ships that continue past Black Falcon/Flynn Cruiseport, but expect intense crowds and keep moving if sightlines are blocked.",
+    sources: [
+      { label: "Leader Bank Pavilion", url: "https://www.leaderbankpavilion.com/" },
+      { label: "Harpoon Brewery Boston", url: "https://www.harpoonbrewery.com/boston-brewery/" },
+      { label: "Boston Harborwalk", url: "https://www.bostonharborwalk.org/" }
+    ]
+  },
+  {
+    id: "fan-pier-harborwalk-poi",
+    title: "Fan Pier / Harborwalk Photo Point",
+    startDate: "2026-07-11",
+    endDate: "2026-07-15",
+    time: "Daytime and fireworks evenings",
+    type: "Point of interest / viewing lead",
+    reservation: "No reservation found",
+    reservationClass: "free",
+    address: "Fan Pier Park, Boston, MA 02210",
+    lat: 42.3534,
+    lng: -71.0431,
+    notes: "Local-feedback lead: easy Seaport photo stop near official fireworks and festival activity. It will likely be crowded; use as a walk-through viewpoint rather than a guaranteed place to sit.",
+    sources: [
+      { label: "Sail Boston events", url: "https://www.sailboston.com/events/" },
+      { label: "Boston Harborwalk", url: "https://www.bostonharborwalk.org/" }
+    ]
+  },
+  {
+    id: "christopher-columbus-park-poi",
+    title: "Christopher Columbus Park / North End Harborwalk Lead",
+    startDate: "2026-07-11",
+    endDate: "2026-07-15",
+    time: "Daytime / verify crowd controls",
+    type: "Point of interest / viewing lead",
+    reservation: "No reservation found",
+    reservationClass: "free",
+    address: "Christopher Columbus Waterfront Park, Boston, MA 02110",
+    lat: 42.3617,
+    lng: -71.0507,
+    notes: "Local-feedback lead: good North End add-on for snacks, shade breaks, and harbor peeks. Exact sightlines depend on vessel positions and any crowd-control fencing.",
+    sources: [
+      { label: "Boston Parks — Christopher Columbus Park", url: "https://www.boston.gov/departments/parks-and-recreation/parks/christopher-columbus-waterfront-park" },
+      { label: "Sail Boston events", url: "https://www.sailboston.com/events/" }
+    ]
+  },
+  {
+    id: "logan-hyatt-viewing-lead",
+    title: "Logan / Hyatt Harborwalk Viewing Lead",
+    startDate: "2026-07-11",
+    endDate: "2026-07-15",
+    time: "Daytime / verify hotel and Massport rules",
+    type: "Point of interest / navigation lead",
+    reservation: "Lead — verify access",
+    reservationClass: "recommended",
+    address: "101 Harborside Drive, Boston, MA 02128",
+    lat: 42.3591,
+    lng: -71.0267,
+    notes: "Local-feedback lead: East Boston/Logan side can offer broad harbor views when downtown piers are packed. Verify hotel access, short-term parking rules, airport traffic, and pedestrian routes before using it as a base.",
+    sources: [
+      { label: "Hyatt Regency Boston Harbor", url: "https://www.hyatt.com/hyatt-regency/en-US/bosha-hyatt-regency-boston-harbor" },
+      { label: "Massport Logan transportation", url: "https://www.massport.com/logan-airport/getting-to-logan" }
+    ]
+  },
+  {
+    id: "greenway-north-end-satellite",
+    title: "Greenway / North End Food Break Satellite Lead",
+    startDate: "2026-07-11",
+    endDate: "2026-07-15",
+    time: "Lunch–evening / verify programming",
+    type: "Parallel / satellite activity lead",
+    reservation: "No reservation found",
+    reservationClass: "free",
+    address: "Rose Kennedy Greenway, Boston, MA 02110",
+    lat: 42.3602,
+    lng: -71.0520,
+    notes: "Local-feedback lead: a practical decompression route between Aquarium, North End, and downtown waterfront crowds. Treat any food trucks, markets, or performances as variable and verify the Greenway calendar close to your date.",
+    sources: [
+      { label: "Rose Kennedy Greenway calendar", url: "https://www.rosekennedygreenway.org/events/" },
+      { label: "Meet Boston Sail Boston guide", url: "https://www.meetboston.com/sail-boston-2026/" }
+    ]
+  },
+  {
+    id: "ica-seaport-satellite",
+    title: "ICA / Seaport Indoor-Cooldown Satellite Lead",
+    startDate: "2026-07-11",
+    endDate: "2026-07-15",
+    time: "Museum hours vary / verify tickets",
+    type: "Parallel / satellite activity lead",
+    reservation: "Recommended — verify tickets",
+    reservationClass: "recommended",
+    address: "Institute of Contemporary Art, 25 Harbor Shore Drive, Boston, MA 02210",
+    lat: 42.3528,
+    lng: -71.0431,
+    notes: "Local-feedback lead: nearby indoor break if Seaport heat or crowds get rough. Not a tall-ship event; check museum hours, timed tickets, and street closures before routing through the area.",
+    sources: [
+      { label: "ICA Boston visit page", url: "https://www.icaboston.org/visit/" },
+      { label: "Boston Harborwalk", url: "https://www.bostonharborwalk.org/" }
+    ]
+  },
+  {
+    id: "traffic-command-center-advisory",
+    title: "Official Traffic / Road Closure Checkpoint Lead",
+    startDate: "2026-07-10",
+    endDate: "2026-07-16",
+    time: "Check before every trip",
+    type: "Road-closure / navigation advisory lead",
+    reservation: "No reservation found",
+    reservationClass: "free",
+    address: "Boston City Hall Plaza, Boston, MA 02201",
+    lat: 42.3604,
+    lng: -71.0579,
+    notes: "Local-feedback lead: road closures can change faster than static maps. Before leaving, check City of Boston, Mass.gov, MBTA alerts, and Sail Boston updates; assume Seaport, North End, Charlestown, East Boston, and Castle Island routes may be managed independently.",
+    sources: [
+      { label: "City of Boston traffic advisories", url: "https://www.boston.gov/departments/transportation" },
+      { label: "MBTA alerts", url: "https://www.mbta.com/alerts" },
+      { label: "Sail Boston official site", url: "https://www.sailboston.com/" }
+    ]
+  },
+  {
     id: "departure-day",
     title: "Tall Ships Departure Day",
     startDate: "2026-07-16",
@@ -590,6 +840,115 @@ const EVENTS = [
     ]
   }
 ];
+
+
+const SAMPLE_SCHEDULES = [
+  {
+    id: "sample-schedule-july11",
+    title: "Sample Schedule — Parade Day on a Budget",
+    startDate: "2026-07-11",
+    endDate: "2026-07-11",
+    time: "8:00 AM–9:45 PM",
+    type: "Sample itinerary / low-cost",
+    reservation: "No reservation found",
+    reservationClass: "free",
+    address: "Castle Island, 2010 Day Boulevard, Boston, MA 02127",
+    lat: 42.3383,
+    lng: -71.0115,
+    notes: "Arrive early at Castle Island with water and snacks for the Parade of Sail, walk the Harborwalk after the crowds thin, board ships after 5 PM if lines are manageable, then choose a free Fan Pier fireworks viewpoint.",
+    sources: [
+      { label: "Sail Boston official events", url: "https://www.sailboston.com/events/" }
+    ]
+  },
+  {
+    id: "sample-schedule-july12",
+    title: "Sample Schedule — Ship Boarding and Harborwalk",
+    startDate: "2026-07-12",
+    endDate: "2026-07-12",
+    time: "10:00 AM–6:00 PM",
+    type: "Sample itinerary / low-cost",
+    reservation: "No reservation found",
+    reservationClass: "free",
+    address: "302 Northern Avenue, Boston, MA 02210",
+    lat: 42.3485,
+    lng: -71.0391,
+    notes: "Start with public boarding near the Seaport piers, watch the Coast Guard demonstration from the waterfront if sightlines are open, use the free festival for concessions and restrooms, and finish with an easy Harborwalk loop.",
+    sources: [
+      { label: "Sail Boston official events", url: "https://www.sailboston.com/events/" }
+    ]
+  },
+  {
+    id: "sample-schedule-july13",
+    title: "Sample Schedule — Crew Parade and Afternoon Boarding",
+    startDate: "2026-07-13",
+    endDate: "2026-07-13",
+    time: "11:30 AM–7:00 PM",
+    type: "Sample itinerary / low-cost",
+    reservation: "No reservation found",
+    reservationClass: "free",
+    address: "Leader Bank Pavilion, 290 Northern Avenue, Boston, MA 02210",
+    lat: 42.3489,
+    lng: -71.0368,
+    notes: "Find a street-parade spot before noon, walk toward Christopher Columbus Park after the parade, bring a packed lunch or grab a simple snack, then board ships once lines settle later in the afternoon.",
+    sources: [
+      { label: "Meet Boston schedule", url: "https://www.meetboston.com/sail-boston-2026/" }
+    ]
+  },
+  {
+    id: "sample-schedule-july14",
+    title: "Sample Schedule — Low-Key Navy Yard Day",
+    startDate: "2026-07-14",
+    endDate: "2026-07-14",
+    time: "10:00 AM–5:30 PM",
+    type: "Sample itinerary / low-cost",
+    reservation: "No reservation found / donation suggested",
+    reservationClass: "free",
+    address: "USS Constitution Museum, Building 22, Charlestown Navy Yard, Charlestown, MA 02129",
+    lat: 42.3725,
+    lng: -71.0566,
+    notes: "Use the Charlestown Navy Yard as a quieter base, visit the museum, check nearby ship-boarding lines, carry a refillable water bottle, and return by ferry or MBTA instead of driving.",
+    sources: [
+      { label: "USS Constitution Museum visit page", url: "https://ussconstitutionmuseum.org/plan-your-visit/" },
+      { label: "Sail Boston official events", url: "https://www.sailboston.com/events/" }
+    ]
+  },
+  {
+    id: "sample-schedule-july15",
+    title: "Sample Schedule — Final Full Boarding Day and Fireworks",
+    startDate: "2026-07-15",
+    endDate: "2026-07-15",
+    time: "10:00 AM–9:45 PM",
+    type: "Sample itinerary / low-cost",
+    reservation: "No reservation found",
+    reservationClass: "free",
+    address: "Fan Pier Park, Boston, MA 02210",
+    lat: 42.3534,
+    lng: -71.0431,
+    notes: "Prioritize one or two must-see ships in the morning, take a midday break away from the waterfront, return for the festival, and claim a free Fan Pier-area fireworks spot before sunset.",
+    sources: [
+      { label: "Sail Boston official events", url: "https://www.sailboston.com/events/" }
+    ]
+  },
+  {
+    id: "sample-schedule-july16",
+    title: "Sample Schedule — Departure Day Harbor Views",
+    startDate: "2026-07-16",
+    endDate: "2026-07-16",
+    time: "Morning–afternoon",
+    type: "Sample itinerary / low-cost",
+    reservation: "No reservation found",
+    reservationClass: "free",
+    address: "Boston Harbor, Boston, MA",
+    lat: 42.3518,
+    lng: -71.0400,
+    notes: "Check official channels for departure timing, use transit to reach a harbor viewpoint, keep plans flexible as ships leave in phases, and pack snacks so the day stays cheap and easy.",
+    sources: [
+      { label: "Sail Boston home page", url: "https://www.sailboston.com/" }
+    ]
+  }
+];
+
+EVENTS.push(...SAMPLE_SCHEDULES);
 
 const BOSTON_HARBOR_CENTER = [42.3532, -71.0430];
 const DEFAULT_ZOOM = 13;
@@ -706,7 +1065,10 @@ async function ensureLeaflet() {
 }
 
 function setMapStatus(message) {
-  if (mapHint) mapHint.textContent = message;
+  if (!mapHint) return;
+
+  mapHint.textContent = message;
+  mapHint.hidden = !message;
 }
 
 function formatDate(dateString) {
@@ -736,7 +1098,12 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function eventIsInOfficialDateWindow(event) {
+  return event.startDate <= EVENT_DATES.at(-1) && EVENT_DATES[0] <= event.endDate;
+}
+
 function eventMatchesDate(event, selectedDate) {
+  if (!eventIsInOfficialDateWindow(event)) return false;
   if (selectedDate === DATE_FILTER_ALL) return true;
   return event.startDate <= selectedDate && selectedDate <= event.endDate;
 }
@@ -781,11 +1148,101 @@ function selectedDateIsAll() {
   return (dateFilter?.value || DATE_FILTER_ALL) === DATE_FILTER_ALL;
 }
 
+const MARKER_TYPES = {
+  parking: {
+    label: "Parking",
+    icon: "🅿️",
+    keywords: ["parking", "garage", "park-and-walk", "shuttle"]
+  },
+  boarding: {
+    label: "Tall ship dock / boarding",
+    icon: "⚓",
+    keywords: ["boarding", "dock", "berth", "public boarding", "ship boarding", "navy yard"]
+  },
+  official: {
+    label: "Official event",
+    icon: "★",
+    keywords: ["official", "ceremony", "festival", "street parade", "parade of sail"]
+  },
+  cruise: {
+    label: "Ticketed cruise",
+    icon: "⛵",
+    keywords: ["ticketed", "cruise", "sail", "schooner", "expedition", "reserved seating", "premium"]
+  },
+  food: {
+    label: "Food / drink",
+    icon: "🍽️",
+    keywords: ["food", "drink", "restaurant", "beer garden", "concessions", "rooftop", "toast"]
+  },
+  viewing: {
+    label: "Viewing",
+    icon: "👀",
+    keywords: ["viewing", "watch party", "grandstands", "observatory"]
+  },
+  museum: {
+    label: "Museum / historic",
+    icon: "🏛️",
+    keywords: ["museum", "historic", "uss constitution"]
+  },
+  advisory: {
+    label: "Advisory / navigation",
+    icon: "⚠️",
+    keywords: ["advisory", "navigation", "status", "lead", "verify", "aggregator"]
+  },
+  fireworks: {
+    label: "Fireworks / party",
+    icon: "🎆",
+    keywords: ["fireworks", "party", "dj", "vip", "pop-up"]
+  },
+  other: {
+    label: "Other",
+    icon: "•",
+    keywords: []
+  }
+};
+
+const MARKER_TYPE_PRIORITY = [
+  "parking",
+  "fireworks",
+  "museum",
+  "food",
+  "advisory",
+  "boarding",
+  "cruise",
+  "official",
+  "viewing"
+];
+
+function markerTypeFor(event) {
+  const typeText = String(event.type || "").toLowerCase();
+
+  if (typeText.includes("sample itinerary")) return "other";
+  if (typeText.includes("parking")) return "parking";
+  if (typeText.includes("fireworks") || typeText.includes("party")) return "fireworks";
+  if (typeText.includes("museum") || typeText.includes("historic")) return "museum";
+  if (typeText.includes("food") || typeText.includes("restaurant") || typeText.includes("beer")) return "food";
+  if (typeText.includes("advisory") || typeText.includes("navigation")) return "advisory";
+  if (typeText.includes("dock") || typeText.includes("boarding")) return "boarding";
+  if (typeText.includes("ticketed") || typeText.includes("cruise") || typeText.includes("sail") || typeText.includes("reserved") || typeText.includes("premium")) return "cruise";
+  if (typeText.includes("official")) return "official";
+  if (typeText.includes("viewing")) return "viewing";
+
+  const searchable = `${event.title} ${event.reservation} ${event.address} ${event.notes}`.toLowerCase();
+  const match = MARKER_TYPE_PRIORITY.find((type) => MARKER_TYPES[type].keywords.some((keyword) => searchable.includes(keyword)));
+  return match || "other";
+}
+
+function markerTitle(event) {
+  return `${event.title} — ${MARKER_TYPES[markerTypeFor(event)].label}`;
+}
+
 function createIcon(event, isActive = false) {
-  const className = `sail-marker${isActive ? " is-active" : ""}`;
+  const markerType = markerTypeFor(event);
+  const markerInfo = MARKER_TYPES[markerType];
+  const className = ["sail-marker", `sail-marker-${markerType}`, isActive ? "is-active" : ""].filter(Boolean).join(" ");
   return L.divIcon({
     className: "sail-marker-wrap",
-    html: `<div class="${className}" aria-hidden="true"><span>⛵</span></div>`,
+    html: `<div class="${className}" aria-hidden="true"><span>${markerInfo.icon}</span></div>`,
     iconSize: [44, 44],
     iconAnchor: [22, 42]
   });
@@ -823,8 +1280,8 @@ function renderMarkers() {
   visible.forEach((event) => {
     const marker = L.marker([event.lat, event.lng], {
       icon: createIcon(event, event.id === activeEventId),
-      title: event.title,
-      alt: event.title,
+      title: markerTitle(event),
+      alt: markerTitle(event),
       keyboard: true,
       riseOnHover: true
     });
@@ -1058,7 +1515,6 @@ function openEvent(eventId, options = {}) {
 
   renderSheet(event);
   sheet.classList.add("is-open");
-  sheet.setAttribute("aria-hidden", "false");
 
   if (options.pan && appShell?.dataset.view === "map" && map) {
     map.panTo([event.lat, event.lng], { animate: true, duration: 0.22 });
@@ -1075,7 +1531,6 @@ function closeSheet() {
   activeEventId = null;
   activeMarker = null;
   sheet.classList.remove("is-open");
-  sheet.setAttribute("aria-hidden", "true");
 }
 
 function setActiveTab(view) {
@@ -1130,7 +1585,8 @@ function installTileLayer(index = 0) {
 
   currentTileLayer.on("tileload", () => {
     currentTileLoadCount += 1;
-    if (currentTileLoadCount === 1) setMapStatus("Tap a sail marker. Tap the map to close details.");
+    // TODO(map-status): Debug a less distracting onboarding hint before restoring the normal bottom map message.
+    if (currentTileLoadCount === 1) setMapStatus("");
   });
 
   currentTileLayer.on("tileerror", () => {
