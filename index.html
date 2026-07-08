@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -14,14 +14,14 @@
   <link rel="preconnect" href="https://c.basemaps.cartocdn.com">
   <link rel="preconnect" href="https://d.basemaps.cartocdn.com">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="styles.css?v=20260707-11">
+  <link rel="stylesheet" href="styles.css?v=20260708-01">
 </head>
 <body>
   <a class="skip-link" href="#events-list">Skip to event list</a>
 
   <main class="app-shell" data-view="map">
     <header class="topbar" aria-label="Tall ships event controls">
-      <div class="brand" aria-label="Sail Boston 2026">
+      <div class="brand">
         <span class="brand-mark" aria-hidden="true">⛵</span>
         <div>
           <h1>Tall Ships</h1>
@@ -47,9 +47,7 @@
 
     <section id="map-panel" class="panel panel-map" role="tabpanel" aria-labelledby="map-tab" aria-label="Tall ships event map">
       <div id="map" role="application" aria-label="Interactive map of Tall Ships events"></div>
-      <div class="map-hint" aria-live="polite">
-        Tap a sail marker. Tap the map to close details.
-      </div>
+      <div class="map-hint" aria-live="polite" hidden></div>
     </section>
 
     <section id="events-list-wrap" class="panel panel-list" role="tabpanel" aria-labelledby="list-tab" hidden>
@@ -82,7 +80,7 @@
       </div>
     </section>
 
-    <aside id="event-sheet" class="event-sheet" aria-live="polite" aria-hidden="true">
+    <aside id="event-sheet" class="event-sheet" aria-live="polite">
       <button id="sheet-close" class="sheet-close" type="button" aria-label="Close event details">×</button>
       <div id="sheet-content"></div>
     </aside>
@@ -95,6 +93,6 @@
   </noscript>
 
   <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=20260707-11" defer></script>
+  <script src="app.js?v=20260708-01" defer></script>
 </body>
 </html>
