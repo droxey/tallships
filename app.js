@@ -48,6 +48,23 @@ const EVENTS = [
     ]
   },
   {
+    id: "new-england-aquarium-sold-out",
+    title: "New England Aquarium Sail Boston Viewing Events — Sold Out",
+    startDate: "2026-07-11",
+    endDate: "2026-07-11",
+    time: "9:30 AM–9:30 PM",
+    type: "Sold-out viewing / fireworks events",
+    reservation: "Sold out",
+    reservationClass: "soldout",
+    address: "New England Aquarium, 1 Central Wharf, Boston, MA 02110",
+    lat: 42.3590,
+    lng: -71.0490,
+    notes: "Daily update for July 9: Aquarium parade viewing, premium parade viewing, fireworks evening, and premium fireworks access are all marked sold out. Do not use this as a backup unless resale/official status changes.",
+    sources: [
+      { label: "New England Aquarium Sail Boston events", url: "https://www.neaq.org/engage/events-and-programs/sail-boston-2026/" }
+    ]
+  },
+  {
     id: "mayflower-status",
     title: "Mayflower II Away From Plymouth / Boston Travel Window",
     startDate: "2026-07-08",
@@ -76,7 +93,7 @@ const EVENTS = [
     address: "Boston Harbor Hotel Rotunda, 70 Rowes Wharf, Boston, MA 02110",
     lat: 42.3564,
     lng: -71.0503,
-    notes: "Official opening marker before the public Parade of Sail day.",
+    notes: "Official opening marker before the public Parade of Sail day. July 9 check: no verified cancellation or official schedule change found.",
     sources: [
       { label: "Meet Boston Sail Boston schedule", url: "https://www.meetboston.com/sail-boston-2026/" }
     ]
@@ -178,7 +195,7 @@ const EVENTS = [
     address: "Castle Island, 2010 Day Boulevard, Boston, MA 02127",
     lat: 42.3385,
     lng: -71.0124,
-    notes: "Top nostalgia pick. Castle Island is an official public viewing area for the Parade of Sail.",
+    notes: "Top nostalgia pick. Castle Island is an official public viewing area for the Parade of Sail. July 11 access is concrete: no Castle Island parking from July 10 at 10 PM to July 11 at 6 PM, Day Boulevard closed July 11 from 6 AM to 6 PM, and security checkpoints at the Castle Island Main Lot and Head Island Causeway from 7 AM to 5 PM.",
     sources: [
       { label: "Sail Boston Parade of Sail", url: "https://www.sailboston.com/parade-of-sail/" },
       { label: "Mass.gov Castle Island guidance", url: "https://www.mass.gov/info-details/sail-boston-2026-what-to-know-before-you-go-to-castle-island" },
@@ -214,7 +231,7 @@ const EVENTS = [
     address: "Fan Pier Park, Boston, MA 02210",
     lat: 42.3535,
     lng: -71.0425,
-    notes: "Alternate public viewing zones include Seaport, Downtown Waterfront, North End, Charlestown, and East Boston.",
+    notes: "Alternate public viewing zones include Seaport, Downtown Waterfront, North End, Charlestown, and East Boston. July 9 check: no verified cancellation or official schedule change to the July 11 Parade of Sail found.",
     sources: [
       { label: "Sail Boston official events", url: "https://www.sailboston.com/events/" },
       { label: "Meet Boston viewing guide", url: "https://www.meetboston.com/sail-boston-2026/boston-tall-ships/" }
@@ -232,7 +249,7 @@ const EVENTS = [
     address: "Boston Fish Pier, 212 Northern Avenue, Boston, MA 02210",
     lat: 42.3488,
     lng: -71.0392,
-    notes: "Best official controlled-seating fallback if Castle Island is too crowded.",
+    notes: "Best official controlled-seating fallback if Castle Island is too crowded. As of the July 9 update, official Boston Fish Pier grandstand tickets are still listed for sale: General Admission $225 and Premium $375 before service fees; inventory can change.",
     sources: [
       { label: "Sail Boston events", url: "https://www.sailboston.com/events/" }
     ]
@@ -368,7 +385,7 @@ const EVENTS = [
     address: "The Tall Ship Boston, 1 East Pier Drive, East Boston, MA 02128",
     lat: 42.3642,
     lng: -71.0352,
-    notes: "21+ ticketed viewing with harbor views. Good controlled-access backup.",
+    notes: "21+ ticketed viewing with harbor views. Good controlled-access backup. As of the July 9 update, The Tall Ship Boston is advertising July 11 viewing-party options, including an aboard viewing party and a tent pig roast viewing party.",
     sources: [
       { label: "Eventbrite listing", url: "https://www.eventbrite.com/e/tall-ship-boston-the-tall-ships-return-vip-viewing-experience-tickets-1993015315459" },
       { label: "Tall Ship Boston Facebook post", url: "https://www.facebook.com/TallShipBoston/posts/guess-were-not-the-only-tall-ship-in-the-harbor-next-weekend%EF%B8%8Fsail-boston-2026-is/1005702162217548/" }
@@ -579,7 +596,7 @@ const EVENTS = [
     address: "William J. Day Boulevard at Castle Island, Boston, MA 02127",
     lat: 42.3382,
     lng: -71.0127,
-    notes: "Local-feedback lead: do not plan on Castle Island or Pleasure Bay curb parking during peak ship days. Expect closures, tow zones, pedestrian-only access, and rideshare drop-offs pushed away from Day Boulevard. Verify the Mass.gov/Sail Boston traffic plan close to event week.",
+    notes: "July 11 Castle Island access: no parking July 10 at 10 PM through July 11 at 6 PM; Day Boulevard closed to vehicles July 11 from 6 AM to 6 PM; security checkpoints at Castle Island Main Lot and Head Island Causeway from 7 AM to 5 PM. Do not plan on Castle Island or Pleasure Bay curb parking; use transit or arrive on foot after checking official updates.",
     sources: [
       { label: "Mass.gov Castle Island guidance", url: "https://www.mass.gov/info-details/sail-boston-2026-what-to-know-before-you-go-to-castle-island" },
       { label: "Sail Boston official events", url: "https://www.sailboston.com/events/" }
@@ -819,6 +836,24 @@ const EVENTS = [
       { label: "City of Boston traffic advisories", url: "https://www.boston.gov/departments/transportation" },
       { label: "MBTA alerts", url: "https://www.mbta.com/alerts" },
       { label: "Sail Boston official site", url: "https://www.sailboston.com/" }
+    ]
+  },
+  {
+    id: "lynx-sailaway-sold-out-lead",
+    title: "Schooner Lynx Sailaway Tickets — No Available Dates Found",
+    startDate: "2026-07-11",
+    endDate: "2026-07-15",
+    time: "Sailaway schedule varies",
+    type: "Sold-out sailaway lead",
+    reservation: "Sold out / no available dates found",
+    reservationClass: "soldout",
+    address: "Boston Harbor, Boston, MA",
+    lat: 42.3521,
+    lng: -71.0436,
+    notes: "Daily update for July 9: the official sailaways ticket flow shows no dates with available tickets for Lynx. Recheck the official ticket page only if a sailaway is a must-have.",
+    sources: [
+      { label: "Sail Boston sailaways tickets", url: "https://www.ticketsignup.io/TicketEvent/SailBoston2026Sailaways" },
+      { label: "Sail Boston participating ships", url: "https://www.sailboston.com/ships/" }
     ]
   },
   {
