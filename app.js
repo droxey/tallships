@@ -579,7 +579,7 @@ const EVENTS = [
     address: "William J. Day Boulevard at Castle Island, Boston, MA 02127",
     lat: 42.3382,
     lng: -71.0127,
-    notes: "Local-feedback lead: do not plan on Castle Island or Pleasure Bay curb parking during peak ship days. Expect closures, tow zones, pedestrian-only access, and rideshare drop-offs pushed away from Day Boulevard. Verify the Mass.gov/Sail Boston traffic plan close to event week.",
+    notes: "according to locals: do not plan on Castle Island or Pleasure Bay curb parking during peak ship days. Expect closures, tow zones, pedestrian-only access, and rideshare drop-offs pushed away from Day Boulevard. Verify the Mass.gov/Sail Boston traffic plan close to event week.",
     sources: [
       { label: "Mass.gov Castle Island guidance", url: "https://www.mass.gov/info-details/sail-boston-2026-what-to-know-before-you-go-to-castle-island" },
       { label: "Sail Boston official events", url: "https://www.sailboston.com/events/" }
@@ -597,7 +597,7 @@ const EVENTS = [
     address: "12 Drydock Avenue, Boston, MA 02210",
     lat: 42.3448,
     lng: -71.0346,
-    notes: "Local-feedback lead for Fish Pier, Flynn Cruiseport, and Seaport festival access. Useful if you are willing to walk Harborwalk; published transient parking is commonly around $25 for 3–10 hours, but event pricing, sellouts, and garage access may change with security perimeters — reserve and verify before driving.",
+    notes: "according to locals for Fish Pier, Flynn Cruiseport, and Seaport festival access. Useful if you are willing to walk Harborwalk; published transient parking is commonly around $25 for 3–10 hours, but event pricing, sellouts, and garage access may change with security perimeters — reserve and verify before driving.",
     sources: [
       { label: "Boston Seaport parking information", url: "https://www.bostonseaport.xyz/transportation/parking/" },
       { label: "Sail Boston official events", url: "https://www.sailboston.com/events/" }
@@ -615,7 +615,7 @@ const EVENTS = [
     address: "Boston Convention and Exhibition Center, 415 Summer Street, Boston, MA 02210",
     lat: 42.3457,
     lng: -71.0466,
-    notes: "Local-feedback lead: a practical Seaport staging point if official lots are open. BCEC self-parking is often listed around $25, but event rates/availability can change. Pair with Silver Line or a 15–25 minute walk to Fish Pier/Fan Pier; verify BCEC event parking, closures on Summer Street, and MBTA service alerts.",
+    notes: "according to locals: a practical Seaport staging point if official lots are open. BCEC self-parking is often listed around $25, but event rates/availability can change. Pair with Silver Line or a 15–25 minute walk to Fish Pier/Fan Pier; verify BCEC event parking, closures on Summer Street, and MBTA service alerts.",
     sources: [
       { label: "BCEC directions and parking", url: "https://www.signatureboston.com/bcec/getting-here" },
       { label: "MBTA Silver Line", url: "https://www.mbta.com/schedules/741/line" }
@@ -633,7 +633,7 @@ const EVENTS = [
     address: "Broadway Station, Dorchester Avenue, Boston, MA 02127",
     lat: 42.3426,
     lng: -71.0571,
-    notes: "Local-feedback lead: skip hunting for beach parking. Use Red Line to Broadway or Andrew, then walk or connect by bus/rideshare before closures tighten. Verify bus detours and station crowd control day-of.",
+    notes: "according to locals: skip hunting for beach parking. Use Red Line to Broadway or Andrew, then walk or connect by bus/rideshare before closures tighten. Verify bus detours and station crowd control day-of.",
     sources: [
       { label: "MBTA service alerts", url: "https://www.mbta.com/alerts" },
       { label: "MBTA Red Line", url: "https://www.mbta.com/schedules/Red/line" }
@@ -651,7 +651,7 @@ const EVENTS = [
     address: "Charlestown Navy Yard, Boston, MA 02129",
     lat: 42.3734,
     lng: -71.0560,
-    notes: "Local-feedback lead: strong historic-dock area near USS Constitution and Pier 6. Treat exact ship assignments as TBD until Sail Boston publishes final berth maps; expect screening and one-way pedestrian flows.",
+    notes: "according to locals: strong historic-dock area near USS Constitution and Pier 6. Treat exact ship assignments as TBD until Sail Boston publishes final berth maps; expect screening and one-way pedestrian flows.",
     sources: [
       { label: "Sail Boston events", url: "https://www.sailboston.com/events/" },
       { label: "USS Constitution Museum visit page", url: "https://ussconstitutionmuseum.org/plan-your-visit/" }
@@ -669,7 +669,7 @@ const EVENTS = [
     address: "1 East Pier Drive, East Boston, MA 02128",
     lat: 42.3642,
     lng: -71.0352,
-    notes: "Local-feedback lead: East Boston offers skyline views and possible dock activity near the Tall Ship Boston. Verify whether piers are ticketed, private, or public on the day you go; Blue Line plus walking usually beats driving.",
+    notes: "according to locals: East Boston offers skyline views and possible dock activity near the Tall Ship Boston. Verify whether piers are ticketed, private, or public on the day you go; Blue Line plus walking usually beats driving.",
     sources: [
       { label: "Tall Ship Boston", url: "https://www.tallshipboston.com/" },
       { label: "MBTA Blue Line", url: "https://www.mbta.com/schedules/Blue/line" }
@@ -687,7 +687,7 @@ const EVENTS = [
     address: "Long Wharf, Boston, MA 02110",
     lat: 42.3596,
     lng: -71.0499,
-    notes: "Local-feedback lead: useful hub for ticketed cruises, Aquarium/Blue Line access, and waterfront walks. Exact tall-ship dock access may be restricted, so verify wharf security and cruise check-in location before committing.",
+    notes: "according to locals: useful hub for ticketed cruises, Aquarium/Blue Line access, and waterfront walks. Exact tall-ship dock access may be restricted, so verify wharf security and cruise check-in location before committing.",
     sources: [
       { label: "Sail Boston official events", url: "https://www.sailboston.com/events/" },
       { label: "MBTA Aquarium Station", url: "https://www.mbta.com/stops/place-aqucl" }
@@ -724,7 +724,7 @@ const EVENTS = [
     address: "Fan Pier Park, Boston, MA 02210",
     lat: 42.3534,
     lng: -71.0431,
-    notes: "Local-feedback lead: easy Seaport photo stop near official fireworks and festival activity. It will likely be crowded; use as a walk-through viewpoint rather than a guaranteed place to sit.",
+    notes: "according to locals: easy Seaport photo stop near official fireworks and festival activity. It will likely be crowded; use as a walk-through viewpoint rather than a guaranteed place to sit.",
     sources: [
       { label: "Sail Boston events", url: "https://www.sailboston.com/events/" },
       { label: "Boston Harborwalk", url: "https://www.bostonharborwalk.org/" }
@@ -742,7 +742,7 @@ const EVENTS = [
     address: "Christopher Columbus Waterfront Park, Boston, MA 02110",
     lat: 42.3617,
     lng: -71.0507,
-    notes: "Local-feedback lead: good North End add-on for snacks, shade breaks, and harbor peeks. Exact sightlines depend on vessel positions and any crowd-control fencing.",
+    notes: "according to locals: good North End add-on for snacks, shade breaks, and harbor peeks. Exact sightlines depend on vessel positions and any crowd-control fencing.",
     sources: [
       { label: "Boston Parks — Christopher Columbus Park", url: "https://www.boston.gov/departments/parks-and-recreation/parks/christopher-columbus-waterfront-park" },
       { label: "Sail Boston events", url: "https://www.sailboston.com/events/" }
@@ -760,7 +760,7 @@ const EVENTS = [
     address: "101 Harborside Drive, Boston, MA 02128",
     lat: 42.3591,
     lng: -71.0267,
-    notes: "Local-feedback lead: East Boston/Logan side can offer broad harbor views when downtown piers are packed. Verify hotel access, short-term parking rules, airport traffic, and pedestrian routes before using it as a base.",
+    notes: "according to locals: East Boston/Logan side can offer broad harbor views when downtown piers are packed. Verify hotel access, short-term parking rules, airport traffic, and pedestrian routes before using it as a base.",
     sources: [
       { label: "Hyatt Regency Boston Harbor", url: "https://www.hyatt.com/hyatt-regency/en-US/bosha-hyatt-regency-boston-harbor" },
       { label: "Massport Logan transportation", url: "https://www.massport.com/logan-airport/getting-to-logan" }
@@ -778,7 +778,7 @@ const EVENTS = [
     address: "Rose Kennedy Greenway, Boston, MA 02110",
     lat: 42.3602,
     lng: -71.0520,
-    notes: "Local-feedback lead: a practical decompression route between Aquarium, North End, and downtown waterfront crowds. Treat any food trucks, markets, or performances as variable and verify the Greenway calendar close to your date.",
+    notes: "according to locals: a practical decompression route between Aquarium, North End, and downtown waterfront crowds. Treat any food trucks, markets, or performances as variable and verify the Greenway calendar close to your date.",
     sources: [
       { label: "Rose Kennedy Greenway calendar", url: "https://www.rosekennedygreenway.org/events/" },
       { label: "Meet Boston Sail Boston guide", url: "https://www.meetboston.com/sail-boston-2026/" }
@@ -796,7 +796,7 @@ const EVENTS = [
     address: "Institute of Contemporary Art, 25 Harbor Shore Drive, Boston, MA 02210",
     lat: 42.3528,
     lng: -71.0431,
-    notes: "Local-feedback lead: nearby indoor break if Seaport heat or crowds get rough. Not a tall-ship event; check museum hours, timed tickets, and street closures before routing through the area.",
+    notes: "according to locals: nearby indoor break if Seaport heat or crowds get rough. Not a tall-ship event; check museum hours, timed tickets, and street closures before routing through the area.",
     sources: [
       { label: "ICA Boston visit page", url: "https://www.icaboston.org/visit/" },
       { label: "Boston Harborwalk", url: "https://www.bostonharborwalk.org/" }
@@ -814,7 +814,7 @@ const EVENTS = [
     address: "Boston City Hall Plaza, Boston, MA 02201",
     lat: 42.3604,
     lng: -71.0579,
-    notes: "Local-feedback lead: road closures can change faster than static maps. Before leaving, check City of Boston, Mass.gov, MBTA alerts, and Sail Boston updates; assume Seaport, North End, Charlestown, East Boston, and Castle Island routes may be managed independently.",
+    notes: "according to locals: road closures can change faster than static maps. Before leaving, check City of Boston, Mass.gov, MBTA alerts, and Sail Boston updates; assume Seaport, North End, Charlestown, East Boston, and Castle Island routes may be managed independently.",
     sources: [
       { label: "City of Boston traffic advisories", url: "https://www.boston.gov/departments/transportation" },
       { label: "MBTA alerts", url: "https://www.mbta.com/alerts" },
