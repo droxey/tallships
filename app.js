@@ -890,7 +890,7 @@ const SAMPLE_SCHEDULES = [
     address: "Castle Island, 2010 Day Boulevard, Boston, MA 02127",
     lat: 42.3383,
     lng: -71.0115,
-    notes: "Arrive early at Castle Island with water and snacks for the Parade of Sail, walk the Harborwalk after the crowds thin, board ships after 5 PM if lines are manageable, then choose a free Fan Pier fireworks viewpoint.",
+    notes: "8:30 AM — Find a viewing spot along the seawall.\n9:00 AM — Parade of Sail begins.\n10:00–11:30 AM — Watch the tall ships pass Castle Island.\n11:30 AM — Walk the Harborwalk toward the Seaport.\n12:00 PM — Lunch in the Seaport.\n1:00–3:00 PM — Explore Fan Pier and the waterfront as ships dock.\n3:00 PM — Visit the Sail Boston Festival (302 Northern Ave.).\n5:00 PM — Public ship boarding (capacity permitting).\n6:30 PM — Dinner in the Seaport.\n8:30 PM — Find a fireworks viewing location near Fan Pier.\n9:15 PM — Fireworks over Boston Harbor.\n10:00 PM — Depart after crowds begin to disperse.",
     sources: [
       { label: "Sail Boston official events", url: "https://www.sailboston.com/events/" }
     ]
@@ -1448,8 +1448,13 @@ function buildIcs(event) {
   ].join("\r\n");
 }
 
-function addToCalendar(event) {
-  const ics = buildIcs(event);
+function isMobileCalendarTarget() {
+  const ua = window.navigator.userAgent;
+  const isTouchMac = /Macintosh/i.test(ua) && window.navigator.maxTouchPoints > 1;
+  return /Android|iPhone|iPad|iPod/i.test(ua) || isTouchMac;
+}
+
+function downloadCalendarFile(event, ics) {
   const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -1460,6 +1465,18 @@ function addToCalendar(event) {
   link.click();
   link.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+function addToCalendar(event) {
+  const ics = buildIcs(event);
+
+  if (isMobileCalendarTarget()) {
+    const calendarUrl = `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`;
+    window.location.href = calendarUrl;
+    return;
+  }
+
+  downloadCalendarFile(event, ics);
 }
 
 function renderSheet(event) {
