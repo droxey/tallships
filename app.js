@@ -1454,9 +1454,13 @@ function isMobileCalendarTarget() {
   return /Android|iPhone|iPad|iPod/i.test(ua) || isTouchMac;
 }
 
-function downloadCalendarFile(event, ics) {
+function calendarBlobUrl(ics) {
   const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
+  return URL.createObjectURL(blob);
+}
+
+function downloadCalendarFile(event, ics) {
+  const url = calendarBlobUrl(ics);
   const link = document.createElement("a");
   link.href = url;
   link.download = `${event.id}.ics`;
@@ -1467,12 +1471,17 @@ function downloadCalendarFile(event, ics) {
   window.setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
+function openCalendarFile(ics) {
+  const url = calendarBlobUrl(ics);
+  window.location.href = url;
+  window.setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+
 function addToCalendar(event) {
   const ics = buildIcs(event);
 
   if (isMobileCalendarTarget()) {
-    const calendarUrl = `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`;
-    window.location.href = calendarUrl;
+    openCalendarFile(ics);
     return;
   }
 
