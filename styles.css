@@ -152,6 +152,19 @@ h1 {
   letter-spacing: -0.035em;
 }
 
+.brand-link {
+  min-height: 34px;
+  margin-top: 8px;
+  border-radius: 999px;
+  padding: 0 14px;
+  text-decoration: none;
+}
+
+.brand-link::after {
+  content: "↗";
+  color: var(--gold);
+}
+
 .brand p,
 .list-header p {
   margin-top: 2px;
@@ -581,7 +594,7 @@ select {
   display: grid;
   grid-template-rows: auto 1fr;
   gap: 12px;
-  padding: calc(126px + var(--safe-top)) max(12px, calc(12px + var(--safe-right))) max(12px, calc(12px + var(--safe-bottom))) max(12px, calc(12px + var(--safe-left)));
+  padding: calc(160px + var(--safe-top)) max(12px, calc(12px + var(--safe-right))) max(12px, calc(12px + var(--safe-bottom))) max(12px, calc(12px + var(--safe-left)));
   background:
     radial-gradient(circle at 85% 12%, rgba(223, 243, 239, 0.95), transparent 30%),
     var(--paper);
@@ -701,7 +714,7 @@ td strong {
   }
 
   .panel-list {
-    padding-top: calc(92px + var(--safe-top));
+    padding-top: calc(126px + var(--safe-top));
   }
 }
 
@@ -733,7 +746,7 @@ td strong {
   }
 
   .panel-list {
-    padding-top: calc(182px + var(--safe-top));
+    padding-top: calc(218px + var(--safe-top));
   }
 
   .table-shell {
